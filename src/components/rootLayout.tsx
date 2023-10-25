@@ -3,7 +3,7 @@ import SideNav from "./SideNav";
 import styled from "styled-components";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default function RootLayout(props: any) {
+export default function RootLayout() {
   const Wrapper = styled.div`
     display: grid;
     gap: 20px;

@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 
-export default function HomeUnLogin(props) {
+export default function HomeUnLogin() {
   const nav = useNavigate();
 
   const Wrapper = styled.div`

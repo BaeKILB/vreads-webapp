@@ -1,7 +1,7 @@
 import * as React from "react";
 import { auth } from "../../fbCode/fbase";
 import { useNavigate } from "react-router-dom";
-import { Button } from "../../style/button";
+import { Button } from "../../style/Button";
 import styled from "styled-components";
 
 export default function LoginCheckRoute({

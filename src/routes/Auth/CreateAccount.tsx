@@ -1,17 +1,18 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { useState } from "react";
 
 import { auth } from "../../fbCode/fbase";
 
-import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../../style/Button";
 import { Input } from "../../style/Input";
 import { FirebaseError } from "firebase/app";
 import { Error, Form, Title, Wrapper } from "../../style/auth-components";
 import GithubBtn from "../../components/auth-components/github-btn";
+import GoogleBtn from "../../components/auth-components/google-btn";
 
-const CreateAccount = (props) => {
+const CreateAccount = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [formData, setFormData] = useState({
@@ -38,7 +39,7 @@ const CreateAccount = (props) => {
       console.log(createUserResult.user);
       await updateProfile(createUserResult.user, { displayName: name });
       nav("/");
-    } catch (e) {
+    } catch (e: any) {
       // 에러 형태가 firebase error일 경우
       if (e instanceof FirebaseError) setError(e.message);
       console.log(e.message);
@@ -48,7 +49,9 @@ const CreateAccount = (props) => {
     console.log(formData);
   };
 
-  const onChangeHandler = (e: React.FormEvent<HTMLInputElement>) => {
+  const onChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e) return;
+
     const {
       target: { name, value },
     } = e;
@@ -100,6 +103,7 @@ const CreateAccount = (props) => {
       </Form>
 
       <GithubBtn />
+      <GoogleBtn />
       {error !== "" && <Error>{error}</Error>}
     </Wrapper>
   );

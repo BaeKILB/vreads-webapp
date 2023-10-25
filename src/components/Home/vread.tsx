@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import styled from "styled-components";
 import { deleteVread } from "../../fbCode/fdb";
 import { useState } from "react";
@@ -49,6 +50,11 @@ const DatePayload = styled.p`
   font-style: italic;
 `;
 
+const ReadMoreP = styled.div`
+  color: #fcbb79;
+  font-style: italic;
+`;
+
 const DeleteButton = styled.button`
   background-color: tomato;
   color: white;
@@ -92,10 +98,10 @@ const ModifySpan = styled.span`
   color: white;
 `;
 
-export default function Vread(props) {
+export default function Vread(props: any) {
   const [error, setError] = useState("");
   const [clickUpdateBtn, setClickUpdateBtn] = useState(false);
-
+  const [isDetailReadMore, setIsDetailReadMore] = useState(false);
   const {
     vtTitle,
     vtDetail,
@@ -124,6 +130,13 @@ export default function Vread(props) {
     if (!result.state) {
       setError(result.error);
     }
+
+    if (props.onReload) props.onReload();
+  };
+
+  // 더보기 버튼
+  const onClickReadMoreHandler = () => {
+    setIsDetailReadMore((state) => !state);
   };
 
   // 날짜 관련
@@ -132,15 +145,26 @@ export default function Vread(props) {
   if (createDate) {
     vreadDate = createDate;
   }
+
+  // 만약 변경된 날짜가 있으면 변경됨 띄우기위한 코드
   let modifyDateCheck: boolean = false;
   if (modifyDate && modifyDate !== 0) {
     modifyDateCheck = true;
   }
 
+  // 날짜 셋팅
   const vd = new Date(vreadDate);
   const vdString =
     vd.getFullYear() + " / " + (vd.getMonth() + 1) + " / " + vd.getDate();
 
+  // 더보기 버튼 띄우기 셋팅
+  let detailReadMore = false;
+  if (vtDetail && vtDetail !== "" && vtDetail.length > 150) {
+    // 150 자 이상일때 텍스트 뒤 내용을 ... 처리
+
+    //버튼 띄우기
+    detailReadMore = true;
+  }
   return (
     <Wrapper>
       {error !== "" && <Error>{error}</Error>}
@@ -150,7 +174,22 @@ export default function Vread(props) {
           {vtTitle}{" "}
           {modifyDateCheck == true && <ModifySpan>(Edited)</ModifySpan>}
         </Payload>
-        {vtDetail !== "" && <Payload>{vtDetail}</Payload>}
+        {vtDetail !== "" && (
+          <>
+            <Payload>
+              {detailReadMore
+                ? isDetailReadMore
+                  ? vtDetail
+                  : vtDetail.slice(0, 150) + "..."
+                : vtDetail}
+            </Payload>
+            {detailReadMore && (
+              <ReadMoreP onClick={onClickReadMoreHandler}>
+                {isDetailReadMore ? "Show Less" : "Read More"}
+              </ReadMoreP>
+            )}
+          </>
+        )}
         <DatePayload>{vdString}</DatePayload>
         {user?.uid === userId && (
           <>
@@ -169,11 +208,7 @@ export default function Vread(props) {
         )}
       </Column>
 
-      {photo ? (
-        <Column>
-          <Photo src={photo} />
-        </Column>
-      ) : null}
+      <Column>{photo ? <Photo src={photo} /> : null}</Column>
     </Wrapper>
   );
 }

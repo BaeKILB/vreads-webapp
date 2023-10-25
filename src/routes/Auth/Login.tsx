@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -8,8 +9,9 @@ import { Error, Form, Title, Wrapper } from "../../style/auth-components";
 import { Input } from "../../style/Input";
 import { Button } from "../../style/Button";
 import GithubBtn from "../../components/auth-components/github-btn";
+import GoogleBtn from "../../components/auth-components/google-btn";
 
-const Login = (props) => {
+const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [formData, setFormData] = useState({
@@ -30,7 +32,7 @@ const Login = (props) => {
       const loginResult = await signInWithEmailAndPassword(auth, email, passwd);
       console.log(loginResult.user);
       nav("/");
-    } catch (e) {
+    } catch (e: any) {
       setError(e.message);
     } finally {
       setIsLoading(false);
@@ -38,7 +40,7 @@ const Login = (props) => {
     console.log(formData);
   };
 
-  const onChangeHandler = (e: React.FormEvent<HTMLInputElement>) => {
+  const onChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     const {
       target: { name, value },
     } = e;
@@ -56,28 +58,28 @@ const Login = (props) => {
       });
   };
 
-  const onSocialClick = async (e) => {
-    const {
-      target: { name },
-    } = e;
+  // const onSocialClick = async (e) => {
+  //   const {
+  //     target: { name },
+  //   } = e;
 
-    // let provider;
+  // let provider;
 
-    // if (name === "google") {
-    //   provider = new firebaseInstance.auth.GoogleAuthProvider();
-    // } else if (name === "github") {
-    //   provider = new firebaseInstance.auth.GithubAuthProvider();
-    // }
-    // try {
-    //   const data = await authService.signInWithPopup(provider);
-    // } catch (e) {
-    //   setError(error.message);
-    // }
-  };
+  // if (name === "google") {
+  //   provider = new firebaseInstance.auth.GoogleAuthProvider();
+  // } else if (name === "github") {
+  //   provider = new firebaseInstance.auth.GithubAuthProvider();
+  // }
+  // try {
+  //   const data = await authService.signInWithPopup(provider);
+  // } catch (e) {
+  //   setError(error.message);
+  // }
+  // };
 
   return (
     <Wrapper>
-      <Title>Login</Title>
+      <Title>Sign in</Title>
       <Form action="" onSubmit={onSubmitHandler}>
         <Input
           type="email"
@@ -95,11 +97,10 @@ const Login = (props) => {
           value={passwd}
           onChange={onChangeHandler}
         />
-        <Button type="submit">
-          {isLoading ? "Loading..." : "Create Account"}
-        </Button>
+        <Button type="submit">{isLoading ? "Loading..." : "Sign in"}</Button>
       </Form>
       <GithubBtn />
+      <GoogleBtn />
       {error !== "" && <Error>{error}</Error>}
     </Wrapper>
   );

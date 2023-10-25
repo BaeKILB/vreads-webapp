@@ -10,6 +10,12 @@ import { Button } from "../../style/Button";
 import { Error } from "../../style/etc_style";
 import styled from "styled-components";
 
+const TimelineWrapper = styled.div`
+  display: flex;
+  gap: 10px;
+  flex-direction: column;
+`;
+
 const Wrapper = styled.div`
   display: flex;
   align-items: center;
@@ -32,7 +38,7 @@ const AvatarUpload = styled.label`
 `;
 
 const AvatarImg = styled.img`
-  width: 100%;
+  width: 90%;
 `;
 const AvatarInput = styled.input`
   display: none;
@@ -58,7 +64,7 @@ const NameInput = styled.input`
   font-size: 16px;
 `;
 
-export default function Profile(props) {
+export default function Profile() {
   const limitCount = 15;
   const user = auth.currentUser;
 
@@ -78,10 +84,11 @@ export default function Profile(props) {
     if (vreadsResult.state == false) {
       return;
     }
+    if (vreadsResult.vreads) {
+      setVreads(vreadsResult.vreads);
 
-    setVreads(vreadsResult.vreads);
-
-    console.log(vreadsResult.vreads);
+      console.log(vreadsResult.vreads);
+    }
   };
 
   // Vread list 받기
@@ -126,7 +133,7 @@ export default function Profile(props) {
   };
 
   //닉네임 입력 동작
-  const onNameChangeHandler = (e) => {
+  const onNameChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     const {
       target: { value },
     } = e;
@@ -157,14 +164,7 @@ export default function Profile(props) {
         {profileImg ? (
           <AvatarImg src={profileImg} />
         ) : (
-          <svg
-            fill="currentColor"
-            viewBox="0 0 20 20"
-            xmlns="http://www.w3.org/2000/svg"
-            aria-hidden="true"
-          >
-            <path d="M10 8a3 3 0 100-6 3 3 0 000 6zM3.465 14.493a1.23 1.23 0 00.41 1.412A9.957 9.957 0 0010 18c2.31 0 4.438-.784 6.131-2.1.43-.333.604-.903.408-1.41a7.002 7.002 0 00-13.074.003z" />
-          </svg>
+          <AvatarImg src="/profile1-svgrepo-com.svg" />
         )}
       </AvatarUpload>
       <AvatarInput
@@ -191,17 +191,20 @@ export default function Profile(props) {
       )}
       {profileError !== "" && <Error key="pro_err">{profileError}</Error>}
       <VreadsTitle>{user?.displayName} 's Vread list</VreadsTitle>
-      {vreads &&
-        vreads.length &&
-        vreads.map((vt) => (
-          <Vread
-            key={vt.id + "_pro"}
-            onUpdateReload={() => {
-              getVreadList(vt.createDate.toString());
-            }}
-            vread={vt}
-          />
-        ))}
+      <TimelineWrapper>
+        {vreads &&
+          vreads.length &&
+          vreads.map((vt) => (
+            <Vread
+              key={vt.id + "_pro"}
+              onUpdateReload={() => {
+                getVreadList(vt.createDate.toString());
+              }}
+              onReload={getVreadList}
+              vread={vt}
+            />
+          ))}
+      </TimelineWrapper>
     </Wrapper>
   );
 }

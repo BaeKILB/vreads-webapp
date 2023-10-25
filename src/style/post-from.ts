@@ -1,7 +1,7 @@
 import styled from "styled-components";
 
 export const Form = styled.form`
-  margin-top: 50px;
+  margin-top: 10px;
   display: flex;
   flex-direction: column;
   gap: 3px;
@@ -15,7 +15,7 @@ export const Textarea = styled.textarea`
   width: 100%;
   font-size: 16px;
   height: auto;
-
+  resize: none;
   //=====type=====
   &[type="submit"] {
     cursor: pointer;

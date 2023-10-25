@@ -39,7 +39,12 @@ dist-ssr
 
 # if you are NOT using Zero-installs, then:
 # comment the following lines
-!.yarn/cache
+!.yarn/cache# yarn v2
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
 
 # and uncomment the following lines
 # .pnp.*
@@ -47,4 +52,11 @@ dist-ssr
 # End of https://www.toptal.com/developers/gitignore/api/yarn
 .env
 
-#firebase
+### Firebase ###
+.idea
+**/node_modules/*
+**/.firebaserc
+
+### Firebase Patch ###
+.runtimeconfig.json
+.firebase/

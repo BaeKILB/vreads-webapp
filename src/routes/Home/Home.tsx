@@ -9,7 +9,7 @@ const Home = () => {
     flex-direction: column;
     align-items: center;
     width: 90%;
-    padding: 50px 0px;
+    padding: 10px 0px;
   `;
 
   return (

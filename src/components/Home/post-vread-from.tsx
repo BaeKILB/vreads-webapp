@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useRef, useState } from "react";
 
 import { Input } from "../../style/Input";
@@ -8,7 +9,7 @@ import { auth } from "../../fbCode/fbase";
 import { Error } from "../../style/auth-components";
 import { addVread, updateVread } from "../../fbCode/fdb";
 
-export default function PostVreadForm(props) {
+export default function PostVreadForm(props: any) {
   const [vtData, setVtData] = useState({ vtTitle: "", vtDetail: "" });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -31,11 +32,16 @@ export default function PostVreadForm(props) {
   }, []);
 
   // vt_detail 줄 늘어나는것 구현
-  const textarea = useRef();
+  // ts 에서 useRef 사용시나 null 값 들어가는 경우 반드시 데이터 형식 지정해야함
+  const textarea = useRef<HTMLTextAreaElement>(null);
 
-  const textAreaResizeHandler = () => {
-    textarea.current.style.height = "auto";
-    textarea.current.style.height = textarea.current.scrollHeight + "px";
+  const textAreaResizeHandler = (isReset: boolean | null) => {
+    if (textarea !== null && textarea.current !== null) {
+      textarea.current.style.height = "auto";
+      textarea.current.style.height = isReset
+        ? "100px"
+        : textarea.current.scrollHeight + "px";
+    }
   };
 
   // ==== 핸들러
@@ -51,14 +57,14 @@ export default function PostVreadForm(props) {
         return { ...state, vtTitle: value };
       });
     } else if (name === "vt_detail") {
-      textAreaResizeHandler();
+      textAreaResizeHandler(false);
       setVtData((state) => {
         return { ...state, vtDetail: value };
       });
     }
   };
 
-  const onFileAddHandler = (e) => {
+  const onFileAddHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { files } = e.target;
     if (files && files.length === 1) {
       setFile(files[0]);
@@ -73,17 +79,25 @@ export default function PostVreadForm(props) {
 
     // 유효성 체크
     if (
+      !user ||
       isLoading ||
       vtTitle === "" ||
       vtTitle.length > 120 ||
-      vtDetail.length > 10000
-    )
+      vtDetail.length > 1500
+    ) {
+      if (vtTitle === "") setError("Vread need title");
+      if (vtTitle.length >= 120)
+        setError("Vread's title do not over length 120");
+      if (vtDetail.length > 1500)
+        setError("Vread's detail do not over length 1500 ");
       return;
+    }
 
     setError("");
     setIsLoading(true);
 
     // db 동작 후 결과 받아올 변수
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let result: any;
 
     // 만약 update버튼을 눌러 해당컴포넌트를 불러온 상태라면 updateVread로 동작하게 하기
@@ -106,17 +120,18 @@ export default function PostVreadForm(props) {
       console.log(result);
     }
 
-    if (result.state && result.state == true) {
-      setVtData({ vtTitle: "", vtDetail: "" });
-      setFile(null);
-    } else if (result.state == false) {
+    if (!result && result.state == false) {
       setError(result.error ? result.error : "Something error");
 
       setIsLoading(false);
       return;
     }
 
+    // post 보내고 난 뒤 값들 초기화 시키기
+    setVtData({ vtTitle: "", vtDetail: "" });
+    setFile(null);
     setIsLoading(false);
+    textAreaResizeHandler(true);
     if (isModify) {
       props.closeForm();
     }
@@ -144,7 +159,7 @@ export default function PostVreadForm(props) {
           className="detail"
           ref={textarea}
           onChange={onChangeHandler}
-          maxLength={10000}
+          maxLength={1500}
         />
         <FileButton htmlFor={isModify ? "modifyFile" : "file"}>
           {file ? "Photo added ✅" : "Add photo"}

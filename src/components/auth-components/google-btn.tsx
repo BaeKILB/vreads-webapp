@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { GithubAuthProvider, signInWithPopup } from "firebase/auth";
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { auth } from "../../fbCode/fbase";
@@ -8,16 +8,17 @@ import { useState } from "react";
 import { FirebaseError } from "firebase/app";
 import { SocialBtn } from "../../style/social-btn";
 
-export default function GithubBtn() {
+const Logo = styled.img`
+  height: 25px;
+`;
+
+export default function GoogleBtn() {
   const [error, setError] = useState("");
   const navi = useNavigate();
 
-  const Logo = styled.img`
-    height: 25px;
-  `;
   const onGithubBtn = async () => {
     try {
-      const provider = new GithubAuthProvider();
+      const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
       navi("/");
     } catch (e: any) {
@@ -28,9 +29,9 @@ export default function GithubBtn() {
   return (
     <>
       {error !== "" && <Error>{error}</Error>}
-      <SocialBtn className="first" onClick={onGithubBtn}>
-        <Logo src="/github-logo.svg"></Logo>
-        Countinue with Github
+      <SocialBtn onClick={onGithubBtn}>
+        <Logo src="/google-logo.svg"></Logo>
+        Countinue with Google
       </SocialBtn>
     </>
   );

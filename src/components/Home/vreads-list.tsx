@@ -12,7 +12,7 @@ const Wrapper = styled.div`
   flex-direction: column;
 `;
 
-export default function VreadsList(props) {
+export default function VreadsList() {
   const [vreads, setVreads] = useState<IVread[]>([]);
 
   useEffect(() => {

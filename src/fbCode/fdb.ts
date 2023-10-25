@@ -1,9 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   addDoc,
   collection,
   deleteDoc,
   doc,
-  getDoc,
   getDocs,
   limit,
   orderBy,
@@ -36,8 +36,9 @@ export interface IVread {
 
 // 특정 유저의 vread 리스트 받아오기
 export const getVreads = async (
-  uid: string,
+  uid: string | undefined,
   limitCount: number,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   limitStart: any | null // orderby 에 해당하는 값을 넣으면 거기서 부터 시작하여 로드함
 ) => {
   // 기존의 실시간 아닌 방식으로 snapshot 받아오기
@@ -82,18 +83,18 @@ export const getVreads = async (
       };
     });
     return { state: true, vreads };
-  } catch (e) {
+  } catch (e: any) {
     console.log(e.message);
     return { state: false, error: e.message };
   }
 };
 
 export const addVread = async (
-  uid: string,
-  displayName: string | null,
+  uid: string | undefined,
+  displayName: string | null | undefined,
   vtTitle: string,
   vtDetail: string,
-  file: any
+  file: File | null
 ) => {
   try {
     const doc = await addDoc(collection(db, "vreads"), {
@@ -117,7 +118,8 @@ export const addVread = async (
 
       await updateDoc(doc, { photo: fileUrl });
     }
-  } catch (e) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (e: any) {
     console.log(e.message);
     // 에러 형태가 firebase error일 경우
     if (e instanceof FirebaseError) return { state: false, error: e.message };
@@ -166,7 +168,7 @@ export const updateVread = async (
 
       await updateDoc(docRef, { photo: fileUrl });
     }
-  } catch (e) {
+  } catch (e: any) {
     console.log(e.message);
     // 에러 형태가 firebase error일 경우
     if (e instanceof FirebaseError) return { state: false, error: e.message };
@@ -178,7 +180,7 @@ export const updateVread = async (
 
 export const deleteVread = async (
   docId: string,
-  uid: string | null,
+  uid: string | undefined | null,
   photo: string | null
 ) => {
   try {
@@ -189,7 +191,7 @@ export const deleteVread = async (
       //사진 삭제
       await deleteObject(photoref);
     }
-  } catch (e) {
+  } catch (e: any) {
     console.log(e.message);
     return { state: false, error: e.message };
   }
@@ -228,7 +230,7 @@ export const updateUser = async (profileData: any) => {
     photoURL !== "" && (await updateProfile(user, { photoURL }));
 
     return { state: true, error: "", photoURL };
-  } catch (e) {
+  } catch (e: any) {
     console.log(e.message);
     if (e instanceof FirebaseError) {
       return { state: false, error: e.message };
