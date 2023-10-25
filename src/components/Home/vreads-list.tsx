@@ -3,7 +3,13 @@ import styled from "styled-components";
 import Vread from "./vread";
 import { IVread } from "../../fbCode/fdb";
 import { Unsubscribe } from "firebase/auth";
-import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
+import {
+  collection,
+  limit,
+  onSnapshot,
+  orderBy,
+  query,
+} from "firebase/firestore";
 import { db } from "../../fbCode/fbase";
 
 const Wrapper = styled.div`
@@ -24,7 +30,8 @@ export default function VreadsList() {
     const fetchVreads = async () => {
       const vreadsQuery = query(
         collection(db, "vreads"),
-        orderBy("createDate", "desc")
+        orderBy("createDate", "desc"),
+        limit(30)
       );
 
       // 기존의 실시간 아닌 방식으로 snapshot 받아오기
@@ -61,8 +68,6 @@ export default function VreadsList() {
           };
         });
         setVreads(vreads);
-
-        console.log(vreads);
       });
     };
 

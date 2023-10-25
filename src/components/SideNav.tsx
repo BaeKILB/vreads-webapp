@@ -16,15 +16,20 @@ const MenuItem = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid white;
   height: 50px;
   width: 50px;
   border-radius: 20%;
   background-color: white;
+  transition: background-color 0.2s, border-color 0.2s;
   img {
     width: 30px;
     fill: white;
   }
+
+  &:hover {
+    background-color: #fcbb79;
+  }
+
   &.log-out {
     border-color: tomato;
     svg {

@@ -27,7 +27,7 @@ const AvatarUpload = styled.label`
   overflow: hidden;
   height: 80px;
   border-radius: 50%;
-  background-color: #1d9bf0;
+  background-color: #fcbb79;
   cursor: pointer;
   display: flex;
   justify-content: center;
@@ -45,6 +45,7 @@ const AvatarInput = styled.input`
 `;
 const Name = styled.span`
   font-size: 22px;
+  cursor: pointer;
 `;
 
 const VreadsTitle = styled.p`
@@ -65,7 +66,7 @@ const NameInput = styled.input`
 `;
 
 export default function Profile() {
-  const limitCount = 15;
+  const limitCount = 30;
   const user = auth.currentUser;
 
   const [profileImg, setProfileImg] = useState(user?.photoURL);

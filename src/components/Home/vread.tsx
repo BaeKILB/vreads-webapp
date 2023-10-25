@@ -53,6 +53,7 @@ const DatePayload = styled.p`
 const ReadMoreP = styled.div`
   color: #fcbb79;
   font-style: italic;
+  cursor: pointer;
 `;
 
 const DeleteButton = styled.button`
@@ -75,7 +76,7 @@ const DeleteButton = styled.button`
 
 const UpdateButton = styled.button`
   background-color: #47e6ff;
-  color: white;
+  color: black;
   font-weight: 600;
   border: 0;
   font-size: 12px;
