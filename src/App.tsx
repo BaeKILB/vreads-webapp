@@ -7,7 +7,7 @@ import reset from "styled-reset";
 import RootLayout from "./components/rootLayout";
 import Login from "./routes/Auth/Login.tsx";
 import Home from "./routes/Home/Home.tsx";
-import Profile from "./routes/Profile";
+import Profile from "./routes/User/Profile.tsx";
 import CreateAccount from "./routes/Auth/CreateAccount.tsx";
 import HomeUnLogin from "./routes/Home/HomeUnLogin.tsx";
 import ProtectedRoute from "./components/auth-components/protected-route.tsx";

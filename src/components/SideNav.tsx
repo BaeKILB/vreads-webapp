@@ -3,7 +3,7 @@ import { auth } from "../fbCode/fbase";
 import { FirebaseError } from "firebase/app";
 import styled from "styled-components";
 
-export default function Nav(props) {
+export default function SideNav(props) {
   const navi = useNavigate();
   const onLogoutHandler = async () => {
     const answer = confirm("정말 로그아웃 하시겠습니까?");
@@ -57,6 +57,12 @@ export default function Nav(props) {
       <Link to="/">
         <MenuItem>
           <img src="/bread-svgrepo-com.svg" alt="Vreads" />
+        </MenuItem>
+      </Link>
+
+      <Link to="/profile">
+        <MenuItem>
+          <img src="/profile1-svgrepo-com.svg" alt="Vreads" />
         </MenuItem>
       </Link>
 

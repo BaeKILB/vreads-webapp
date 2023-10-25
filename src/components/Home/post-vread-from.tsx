@@ -1,20 +1,35 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Input } from "../../style/Input";
 import { Button } from "../../style/Button";
 import { FileButton, FileInput, Form, Textarea } from "../../style/post-from";
 
-import { FirebaseError } from "firebase/app";
-import { addDoc, collection, updateDoc } from "firebase/firestore";
-import { auth, db, storage } from "../../fbCode/fbase";
+import { auth } from "../../fbCode/fbase";
 import { Error } from "../../style/auth-components";
-import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { addVread, updateVread } from "../../fbCode/fdb";
 
 export default function PostVreadForm(props) {
   const [vtData, setVtData] = useState({ vtTitle: "", vtDetail: "" });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [file, setFile] = useState<File | null>(null);
+
+  //===========
+  // 만약 update 버튼을 눌러 진입했을때
+  // vtData 에 값 넣어주기
+
+  // isModify 은근히 많이써서 변수에 넣기
+  let isModify = false;
+  if (props.isModify) isModify = props.isModify;
+
+  //useEffect 활용
+  useEffect(() => {
+    if (isModify) {
+      const { vtTitle, vtDetail } = props.vread;
+      setVtData({ vtTitle, vtDetail });
+    }
+  }, []);
+
   // vt_detail 줄 늘어나는것 구현
   const textarea = useRef();
 
@@ -22,6 +37,8 @@ export default function PostVreadForm(props) {
     textarea.current.style.height = "auto";
     textarea.current.style.height = textarea.current.scrollHeight + "px";
   };
+
+  // ==== 핸들러
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onChangeHandler = (e: any) => {
@@ -53,6 +70,7 @@ export default function PostVreadForm(props) {
     const user = auth.currentUser;
 
     e.preventDefault();
+
     // 유효성 체크
     if (
       isLoading ||
@@ -61,62 +79,48 @@ export default function PostVreadForm(props) {
       vtDetail.length > 10000
     )
       return;
-    try {
-      setError("");
-      setIsLoading(true);
-      const doc = await addDoc(collection(db, "vtDatas"), {
+
+    setError("");
+    setIsLoading(true);
+
+    // db 동작 후 결과 받아올 변수
+    let result: any;
+
+    // 만약 update버튼을 눌러 해당컴포넌트를 불러온 상태라면 updateVread로 동작하게 하기
+    if (isModify) {
+      const { id } = props.vread;
+
+      result = await updateVread(id, vtTitle, vtDetail, file);
+
+      // onUpdateReload 를 동작시켜 현재 업데이트된 항목부터 불러오게 하기
+      if (props.onUpdateReload) props.onUpdateReload();
+      console.log(result);
+    } else {
+      result = await addVread(
+        user?.uid,
+        user?.displayName,
         vtTitle,
         vtDetail,
-        createDate: Date.now(),
-        username: user?.displayName || "Vaker",
-      });
+        file
+      );
+      console.log(result);
+    }
 
-      // 이미지 파일 있는지 확인
-      if (file) {
-        // 업로드 준비
-        const locationRef = ref(
-          storage,
-          "vtData/" + user?.uid + "-" + user?.displayName + "/" + doc.id
-        );
-
-        //업로드
-        const result = await uploadBytes(locationRef, file);
-
-        const fileUrl = await getDownloadURL(result.ref);
-
-        await updateDoc(doc, { photo: fileUrl });
-      }
+    if (result.state && result.state == true) {
       setVtData({ vtTitle: "", vtDetail: "" });
       setFile(null);
-    } catch (e) {
-      // 에러 형태가 firebase error일 경우
-      if (e instanceof FirebaseError) setError(e.message);
-      console.log(e.message);
-    } finally {
+    } else if (result.state == false) {
+      setError(result.error ? result.error : "Something error");
+
       setIsLoading(false);
+      return;
     }
-    console.log(vtData);
+
+    setIsLoading(false);
+    if (isModify) {
+      props.closeForm();
+    }
   };
-  // const result = await dbVtdataAdd(vtData).then((r) => {
-  //   if (r) {
-  //     if (r.state === "true") {
-  //       setVtData({ vtTitle: "", vtDetail: "" });
-  //     } else if (r.state === "error") {
-  //       console.log(r.error);
-  //     } else {
-  //       console.log("etc");
-  //       console.log(r);
-  //     }
-  //   }
-  // });
-
-  // dbService.collection("vt_data").add({
-  //   vt_title: vtTitle,
-  //   vt_detail: vtDetail,
-  //   vt_date: Date.now(),
-  // });
-
-  //===style
 
   return (
     <>
@@ -142,16 +146,18 @@ export default function PostVreadForm(props) {
           onChange={onChangeHandler}
           maxLength={10000}
         />
-        <FileButton htmlFor="file">
+        <FileButton htmlFor={isModify ? "modifyFile" : "file"}>
           {file ? "Photo added ✅" : "Add photo"}
         </FileButton>
         <FileInput
           onChange={onFileAddHandler}
           type="file"
-          id="file"
+          id={isModify ? "modifyFile" : "file"}
           accept="image/*"
         />
-        <Button type="submit">Vread Post</Button>
+        <Button type="submit">
+          {isModify ? "Vread update" : "Vread Post"}
+        </Button>
       </Form>
     </>
   );
