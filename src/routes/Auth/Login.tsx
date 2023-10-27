@@ -29,15 +29,14 @@ const Login = () => {
       // 유효성 체크
       if (isLoading || email === "" || passwd === "") return;
       // 유저 로그인 동작
-      const loginResult = await signInWithEmailAndPassword(auth, email, passwd);
-      console.log(loginResult.user);
+      await signInWithEmailAndPassword(auth, email, passwd);
+
       nav("/");
     } catch (e: any) {
       setError(e.message);
     } finally {
       setIsLoading(false);
     }
-    console.log(formData);
   };
 
   const onChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {

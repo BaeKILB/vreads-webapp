@@ -76,7 +76,6 @@ export default function Profile() {
   const navi = useNavigate();
   // 다른 유저 페이지로 접근시
   const { anotherUserUid } = useParams();
-  console.log(anotherUserUid);
   const limitCount = 30;
 
   const getAnotherUserInfo = async () => {
@@ -242,18 +241,18 @@ export default function Profile() {
       {profileError !== "" && <Error key="pro_err">{profileError}</Error>}
       <VreadsTitle>{user?.displayName} 's Vread list</VreadsTitle>
       <TimelineWrapper>
-        {vreads &&
-          vreads.length &&
-          vreads.map((vt) => (
-            <Vread
-              key={vt.id + "_pro"}
-              onUpdateReload={() => {
-                getVreadList(vt.createDate.toString());
-              }}
-              onReload={getVreadList}
-              vread={vt}
-            />
-          ))}
+        {vreads && vreads.length > 0
+          ? vreads.map((vt) => (
+              <Vread
+                key={vt.id + "_pro"}
+                onUpdateReload={() => {
+                  getVreadList(vt.createDate.toString());
+                }}
+                onReload={getVreadList}
+                vread={vt}
+              />
+            ))
+          : "There are currently no posted Vread."}
       </TimelineWrapper>
     </Wrapper>
   );

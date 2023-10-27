@@ -92,7 +92,6 @@ export default function SearchVreads() {
         setSearchError(resultVreads.error);
       } else {
         // setLimitStart((state) => state + limit);
-        console.log(resultVreads.vreads);
         if (isSearchMore)
           setSearchVreads((state) => [...state, ...resultVreads.vreads]);
         else setSearchVreads(resultVreads.vreads);

@@ -16,6 +16,7 @@ import LoginCheckRoute from "./components/auth-components/loginCheck.tsx";
 
 import { auth } from "./fbCode/fbase.ts";
 import SearchSubtag from "./routes/search/SearchSubtag.tsx";
+import SearchBakers from "./routes/search/SearchBakers.tsx";
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -70,6 +71,7 @@ function App() {
           element: <SearchSubtag />,
           children: [{ path: ":subTag", element: <SearchSubtag /> }],
         },
+        { path: "bakers", element: <SearchBakers /> },
       ],
     },
     {

@@ -64,7 +64,6 @@ export default function SideNav() {
       }
     }
   };
-  console.log(user?.providerData[0]);
   const profileImg = user?.photoURL;
   return (
     <Menu>

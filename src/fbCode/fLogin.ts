@@ -1,3 +1,13 @@
+// 유저 가져올떄 인터페이스
+export interface IGetUser {
+  uid: string;
+  name: string;
+  email: string;
+  loginType: number;
+  photoURL: string;
+  id: string;
+}
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   addDoc,
@@ -5,6 +15,7 @@ import {
   collection,
   doc,
   getDocs,
+  limit,
   query,
   updateDoc,
   where,
@@ -97,6 +108,43 @@ export const getUserInfo = async (uid: string | undefined | null) => {
       return { state: false, error: "error: Not found user" };
     } else {
       return { state: true, error: "", user: users[0] };
+    }
+  } catch (e: any) {
+    console.log(e.message);
+    if (e.message) return { state: false, error: e.message };
+    else return { state: false, error: "Something error" };
+  }
+};
+
+export const getUsersInfo = async (
+  name: string | undefined | null,
+  limitCounter: number
+) => {
+  try {
+    // 해당 유저가 팔로우 하는 리스트
+    let userQuery = query(collection(db, "userInfo"), limit(limitCounter));
+    if (name && name !== "")
+      userQuery = query(
+        collection(db, "userInfo"),
+        where("name", "==", name),
+        limit(limitCounter)
+      );
+    const snapshot = await getDocs(userQuery);
+    const users = snapshot.docs.map((doc) => {
+      const { id, name, email, loginType, photoURL } = doc.data();
+      return {
+        uid: id,
+        name,
+        email,
+        loginType,
+        photoURL,
+        id: doc.id,
+      };
+    });
+    if (users.length < 0) {
+      return { state: false, error: "error: Not found user" };
+    } else {
+      return { state: true, error: "", users: users };
     }
   } catch (e: any) {
     console.log(e.message);

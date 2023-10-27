@@ -49,14 +49,11 @@ export const getVreads = async (
 ) => {
   // 기존의 실시간 아닌 방식으로 snapshot 받아오기
   try {
-    console.log(0);
-    console.log(uid);
     let vreadsQuery = query(
       collection(db, "vreads"),
       orderBy("createDate", "desc")
     );
     if (uid && queryType == 1) {
-      console.log(1);
       vreadsQuery = query(
         collection(db, "vreads"),
         where("userId", "==", uid),
@@ -66,7 +63,6 @@ export const getVreads = async (
     }
 
     if (limitStart && limitStart !== "" && queryType == 2) {
-      console.log(2);
       vreadsQuery = query(
         collection(db, "vreads"),
         where("userId", "==", uid),
@@ -76,7 +72,6 @@ export const getVreads = async (
     }
 
     if (searchKeyword && queryType == 3) {
-      console.log(3);
       vreadsQuery = query(
         collection(db, "vreads"),
         or(
@@ -203,7 +198,6 @@ export const updateVread = async (
       vtSubtag,
       modifyDate: Date.now(),
     });
-    console.log("1");
     // 이미지 파일 있는지 확인
     if (file) {
       // 만약 기존에 photo가 있다면 먼저 지우기
@@ -212,7 +206,6 @@ export const updateVread = async (
       //사진 삭제
       await deleteObject(photoref);
 
-      console.log("2");
       // 업로드 준비
       const locationRef = ref(
         storage,

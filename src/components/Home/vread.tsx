@@ -83,9 +83,9 @@ const SubTagPayload = styled.p`
   color: #fcbb79;
   display: inline-block;
   padding: 5px;
-
   border: 2px solid #fffbf81d;
   border-radius: 10px;
+  transition: border 0.2s;
   &:hover {
     cursor: pointer;
     border: 2px solid #fcbb79;
