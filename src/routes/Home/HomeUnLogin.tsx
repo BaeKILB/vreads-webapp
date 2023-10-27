@@ -19,9 +19,22 @@ export default function HomeUnLogin() {
     font-size: 65px;
   `;
 
+  const LogoImage = styled.img`
+    margin: 20px;
+    min-width: 300px;
+    width: 50%;
+    max-width: 800px;
+    background-color: white;
+    border-radius: 10px;
+    transition: background-color 0.3s;
+    &:hover {
+      background-color: #fcbb79;
+    }
+  `;
   const Sub = styled.div`
     margin-top: 20px;
     font-size: 45px;
+    text-align: center;
   `;
 
   const Button = styled.button`
@@ -47,6 +60,7 @@ export default function HomeUnLogin() {
   return (
     <Wrapper>
       <Title>Vreads</Title>
+      <LogoImage src="/bread-svgrepo-com.svg" />
       <Sub>Watch And Find A Vreads</Sub>
       <AccountBox>
         <Button onClick={() => nav("/login")}>Sign in</Button>

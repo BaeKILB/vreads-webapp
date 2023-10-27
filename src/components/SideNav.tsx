@@ -42,6 +42,7 @@ const MenuItem = styled.div`
 
 const AvatarImg = styled.img`
   width: 100%;
+  border-radius: 10px;
 `;
 
 export default function SideNav() {
