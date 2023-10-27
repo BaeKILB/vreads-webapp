@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Error } from "../../style/auth-components";
 import { auth } from "../../fbCode/fbase";
 import PostVreadForm from "./post-vread-from";
+import { useNavigate } from "react-router-dom";
 const Wrapper = styled.div`
   display: grid;
   grid-template-columns: 4fr 1fr;
@@ -157,6 +158,7 @@ export default function Vread(props: any) {
     id,
   } = props.vread;
 
+  const navi = useNavigate();
   // 핸들러
 
   const user = auth.currentUser;
@@ -213,7 +215,7 @@ export default function Vread(props: any) {
     <Wrapper>
       {error !== "" && <Error>{error}</Error>}
       <Column>
-        <PlofileWrap>
+        <PlofileWrap onClick={() => navi("/profile/" + userId)}>
           <ProfileImgWrap>
             {userPhoto ? (
               <ProfileImg src={userPhoto} />
@@ -243,7 +245,11 @@ export default function Vread(props: any) {
             )}
           </>
         )}
-        {vtSubtag && <SubTagPayload>SubTag : {vtSubtag}</SubTagPayload>}
+        {vtSubtag && (
+          <SubTagPayload onClick={() => navi("/subtag/" + vtSubtag)}>
+            SubTag : {vtSubtag}
+          </SubTagPayload>
+        )}
         <DatePayload>{vdString}</DatePayload>
         {user?.uid === userId && (
           <>

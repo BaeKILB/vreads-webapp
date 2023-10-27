@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { Input } from "../../style/Input";
 import { IVread, getVreads } from "../../fbCode/fdb";
 import { Error } from "../../style/etc_style";
 import Vread from "../../components/Home/vread";
+import { useParams } from "react-router-dom";
 const Wrapper = styled.div`
   display: flex;
   align-items: center;
@@ -61,6 +62,7 @@ export default function SearchSubtag() {
   const [isSearchLoading, setIsSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState("");
   const [searchVreads, setSearchVreads] = useState<IVread[]>([]);
+  const { subTag } = useParams();
 
   const onChangeKeywordHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     const {
@@ -69,20 +71,19 @@ export default function SearchSubtag() {
     setSearchKeyword(value);
   };
 
-  const onSearchHandler = async (isSearchMore: boolean) => {
+  const onSearchHandler = async (
+    isSearchMore: boolean,
+    paramKeyword: string | null
+  ) => {
     const limit = 30;
     if (!isSearchMore) setLimitStart("");
     if (isSearchLoading) return;
     setIsSearchLoading(true);
-    if (searchKeyword !== "") {
+    if (searchKeyword !== "" || (paramKeyword && paramKeyword !== "")) {
       setSearchError("");
-      const resultVreads = await getVreads(
-        5,
-        null,
-        limit,
-        limitStart,
-        searchKeyword
-      );
+      let kw = searchKeyword;
+      if (paramKeyword && paramKeyword !== "") kw = paramKeyword;
+      const resultVreads = await getVreads(5, null, limit, limitStart, kw);
       if (
         !resultVreads ||
         !resultVreads.vreads ||
@@ -102,9 +103,15 @@ export default function SearchSubtag() {
 
   const onKeydownSearchHandler = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
-      onSearchHandler(false);
+      onSearchHandler(false, null);
     }
   };
+
+  useEffect(() => {
+    if (subTag) {
+      onSearchHandler(false, subTag);
+    }
+  }, []);
 
   return (
     <Wrapper>
@@ -119,7 +126,9 @@ export default function SearchSubtag() {
           placeholder="Which Vread SubTag are you searching for?"
           required
         />
-        <SearchBtn onClick={() => onSearchHandler(false)}>Search</SearchBtn>
+        <SearchBtn onClick={() => onSearchHandler(false, null)}>
+          Search
+        </SearchBtn>
       </SearchInputBox>
 
       {searchError !== "" && <Error>{searchError}</Error>}

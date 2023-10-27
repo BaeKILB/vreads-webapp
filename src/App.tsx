@@ -59,9 +59,17 @@ function App() {
       ),
       children: [
         { path: "", element: <Home /> },
-        { path: "profile", element: <Profile /> },
+        {
+          path: "profile",
+          element: <Profile />,
+          children: [{ path: ":anotherUserUid", element: <Profile /> }],
+        },
         { path: "search", element: <SearchVreads /> },
-        { path: "subtag", element: <SearchSubtag /> },
+        {
+          path: "subtag",
+          element: <SearchSubtag />,
+          children: [{ path: ":subTag", element: <SearchSubtag /> }],
+        },
       ],
     },
     {

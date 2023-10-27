@@ -49,11 +49,14 @@ export const getVreads = async (
 ) => {
   // 기존의 실시간 아닌 방식으로 snapshot 받아오기
   try {
+    console.log(0);
+    console.log(uid);
     let vreadsQuery = query(
       collection(db, "vreads"),
       orderBy("createDate", "desc")
     );
     if (uid && queryType == 1) {
+      console.log(1);
       vreadsQuery = query(
         collection(db, "vreads"),
         where("userId", "==", uid),
@@ -63,16 +66,17 @@ export const getVreads = async (
     }
 
     if (limitStart && limitStart !== "" && queryType == 2) {
+      console.log(2);
       vreadsQuery = query(
         collection(db, "vreads"),
         where("userId", "==", uid),
         orderBy("createDate", "desc"),
-        startAfter(limitStart),
         limit(limitCount)
       );
     }
 
     if (searchKeyword && queryType == 3) {
+      console.log(3);
       vreadsQuery = query(
         collection(db, "vreads"),
         or(

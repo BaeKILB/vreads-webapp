@@ -10,6 +10,8 @@ import Vread from "../../components/Home/vread";
 import { Button } from "../../style/Button";
 import { Error } from "../../style/etc_style";
 import styled from "styled-components";
+import { useNavigate, useParams } from "react-router-dom";
+import { getUserInfo } from "../../fbCode/fLogin";
 
 const TimelineWrapper = styled.div`
   display: flex;
@@ -69,11 +71,42 @@ const NameInput = styled.input`
   font-size: 16px;
 `;
 
-export default function Profile(props: any) {
-  const { anotherUserUid } = props;
-
+export default function Profile() {
+  const [user, setUser] = useState({ uid: "", displayName: "", photoURL: "" });
+  const navi = useNavigate();
+  // 다른 유저 페이지로 접근시
+  const { anotherUserUid } = useParams();
+  console.log(anotherUserUid);
   const limitCount = 30;
-  const user = auth.currentUser;
+
+  const getAnotherUserInfo = async () => {
+    if (!anotherUserUid || anotherUserUid === "") {
+      const userTemp = auth.currentUser;
+
+      if (userTemp?.uid || userTemp?.displayName || userTemp?.photoURL) {
+        setUser({
+          uid: userTemp.uid,
+          displayName: userTemp.displayName || "",
+          photoURL: userTemp.photoURL || "",
+        });
+        setProfileImg(userTemp.photoURL || "");
+      }
+      return;
+    }
+
+    const resultInfo = await getUserInfo(anotherUserUid);
+    if (!resultInfo.user || resultInfo.state === false) {
+      navi("/");
+    } else {
+      const userInfo = resultInfo.user;
+      setUser({
+        uid: userInfo.uid,
+        displayName: userInfo.name,
+        photoURL: userInfo.photoURL,
+      });
+      setProfileImg(userInfo.photoURL);
+    }
+  };
 
   const [profileImg, setProfileImg] = useState(user?.photoURL);
   const [nameInput, setNameInput] = useState(user?.displayName);
@@ -87,7 +120,8 @@ export default function Profile(props: any) {
     if (isProLoading) return;
     let uid = user?.uid;
     if (anotherUserUid) uid = anotherUserUid;
-    const vreadsResult = await getVreads(2, uid, limitCount, limitStart, null);
+    console.log(uid);
+    const vreadsResult = await getVreads(1, uid, limitCount, limitStart, null);
 
     if (vreadsResult.state == false) {
       return;
@@ -101,6 +135,7 @@ export default function Profile(props: any) {
 
   // Vread list 받기
   useEffect(() => {
+    getAnotherUserInfo();
     getVreadList(null);
   }, []);
 

@@ -46,7 +46,7 @@ export default function NavBar() {
         <NavItem src="/bread-bakers.svg" />
       </NavLink>
       <NavLink to={"/profile"}>
-        <NavItem src="profile1-white-com.svg" />
+        <NavItem src="/profile1-white-com.svg" />
       </NavLink>
     </NavBox>
   );

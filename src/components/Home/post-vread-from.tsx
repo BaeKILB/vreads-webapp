@@ -3,7 +3,13 @@ import { useEffect, useRef, useState } from "react";
 
 import { Input } from "../../style/Input";
 import { Button } from "../../style/Button";
-import { FileButton, FileInput, Form, Textarea } from "../../style/post-from";
+import {
+  BtnWarp,
+  FileButton,
+  FileInput,
+  Form,
+  Textarea,
+} from "../../style/post-from";
 
 import { auth } from "../../fbCode/fbase";
 import { Error } from "../../style/auth-components";
@@ -175,27 +181,33 @@ export default function PostVreadForm(props: any) {
           onChange={onChangeHandler}
           maxLength={1500}
         />
-        <Input
-          value={vtData.vtSubtag}
-          type="text"
-          placeholder="Enter subtag"
-          name="vt_subtag"
-          maxLength={20}
-          className="hash"
-          onChange={onChangeHandler}
-        />
-        <FileButton htmlFor={isModify ? "modifyFile" : "file"}>
-          {file ? "Photo added ✅" : "Add photo"}
-        </FileButton>
-        <FileInput
-          onChange={onFileAddHandler}
-          type="file"
-          id={isModify ? "modifyFile" : "file"}
-          accept="image/*"
-        />
-        <Button type="submit">
-          {isModify ? "Vread update" : "Vread Post"}
-        </Button>
+        <BtnWarp>
+          <Input
+            value={vtData.vtSubtag}
+            type="text"
+            placeholder="Enter subtag"
+            name="vt_subtag"
+            maxLength={20}
+            className="hash"
+            onChange={onChangeHandler}
+          />
+          <FileButton htmlFor={isModify ? "modifyFile" : "file"}>
+            {file ? (
+              <img src={URL.createObjectURL(file)} alt="Image upload file" />
+            ) : (
+              <img src="/image-plus-svgrepo-com.svg" alt="Image upload" />
+            )}
+          </FileButton>
+          <FileInput
+            onChange={onFileAddHandler}
+            type="file"
+            id={isModify ? "modifyFile" : "file"}
+            accept="image/*"
+          />
+          <Button type="submit">
+            {isModify ? "Vread update" : "Vread Post"}
+          </Button>
+        </BtnWarp>
       </Form>
     </>
   );

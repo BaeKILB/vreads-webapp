@@ -8,6 +8,15 @@ export const Form = styled.form`
   width: 100%;
 `;
 
+export const BtnWarp = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  margin-top: 5px;
+  width: 100%;
+`;
+
 export const Textarea = styled.textarea`
   padding: 10px;
   border-radius: 10px;
@@ -26,17 +35,21 @@ export const Textarea = styled.textarea`
 `;
 
 export const FileButton = styled.label`
-  padding: 10px 0px;
+  display: inline-block;
   color: #fcbb79;
   text-align: center;
   border-radius: 10px;
   border: 1px solid #fcbb79;
   font-size: 14px;
   font-weight: 600;
+  background-color: white;
   transition: background-color 0.3s, color 0.3s;
   cursor: pointer;
+  img {
+    width: 40px;
+  }
   &:hover {
-    background-color: white;
+    background-color: #fcbb79;
     color: black;
   }
 `;
