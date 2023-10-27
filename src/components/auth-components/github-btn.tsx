@@ -7,6 +7,7 @@ import { Error } from "../../style/auth-components";
 import { useState } from "react";
 import { FirebaseError } from "firebase/app";
 import { SocialBtn } from "../../style/social-btn";
+import { addUserInfo } from "../../fbCode/fLogin";
 
 export default function GithubBtn() {
   const [error, setError] = useState("");
@@ -19,7 +20,27 @@ export default function GithubBtn() {
     try {
       const provider = new GithubAuthProvider();
       await signInWithPopup(auth, provider);
-      navi("/");
+
+      //db에 회원 넣기
+      const user = auth.currentUser;
+      const resultInfo = await addUserInfo(
+        user?.uid,
+        user?.displayName,
+        user?.email,
+        1,
+        user?.photoURL
+      );
+      if (!resultInfo || resultInfo.state === false) {
+        if (resultInfo.error) {
+          setError(resultInfo.error);
+        } else {
+          setError("Something wrong");
+        }
+        console.log(resultInfo.error);
+        return;
+      } else {
+        navi("/");
+      }
     } catch (e: any) {
       console.log(e.message);
       if (e instanceof FirebaseError) setError(e.message);

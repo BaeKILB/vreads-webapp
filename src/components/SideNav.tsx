@@ -30,10 +30,12 @@ const MenuItem = styled.div`
     background-color: #fcbb79;
   }
 
-  &.log-out {
-    border-color: tomato;
-    svg {
-      fill: tomato;
+  &.nav-logout {
+    &:hover {
+      background-color: tomato;
+      svg {
+        fill: tomato;
+      }
     }
   }
 `;
@@ -62,6 +64,7 @@ export default function SideNav() {
       }
     }
   };
+  console.log(user?.providerData[0]);
   const profileImg = user?.photoURL;
   return (
     <Menu>
@@ -82,7 +85,7 @@ export default function SideNav() {
       </Link>
 
       <Link to="">
-        <MenuItem onClick={onLogoutHandler}>
+        <MenuItem className="nav-logout" onClick={onLogoutHandler}>
           <img src="/logout-svgrepo-com.svg" alt="logout" />
         </MenuItem>
       </Link>

@@ -11,6 +11,7 @@ import { FirebaseError } from "firebase/app";
 import { Error, Form, Title, Wrapper } from "../../style/auth-components";
 import GithubBtn from "../../components/auth-components/github-btn";
 import GoogleBtn from "../../components/auth-components/google-btn";
+import { addUserInfo } from "../../fbCode/fLogin";
 
 const CreateAccount = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -38,6 +39,8 @@ const CreateAccount = () => {
       );
       console.log(createUserResult.user);
       await updateProfile(createUserResult.user, { displayName: name });
+
+      await addUserInfo(createUserResult.user.uid, name, email, 0, null);
       nav("/");
     } catch (e: any) {
       // 에러 형태가 firebase error일 경우

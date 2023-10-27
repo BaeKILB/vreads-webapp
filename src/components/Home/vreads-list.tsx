@@ -16,6 +16,7 @@ const Wrapper = styled.div`
   display: flex;
   gap: 10px;
   flex-direction: column;
+  width: 100%;
 `;
 
 export default function VreadsList() {
@@ -50,18 +51,22 @@ export default function VreadsList() {
           const {
             vtTitle,
             vtDetail,
+            vtSubtag,
             userId,
             username,
             photo,
+            userPhoto,
             createDate,
             modifyDate,
           } = doc.data();
           return {
             vtTitle,
             vtDetail,
+            vtSubtag,
             userId,
             username,
             photo,
+            userPhoto,
             createDate,
             modifyDate,
             id: doc.id,

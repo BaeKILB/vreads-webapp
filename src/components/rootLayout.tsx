@@ -1,6 +1,8 @@
 import { Outlet } from "react-router-dom";
 import SideNav from "./SideNav";
 import styled from "styled-components";
+import { OutletWrapper } from "../style/OutletWrapper";
+import NavBar from "./NavBar";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function RootLayout() {
@@ -18,7 +20,10 @@ export default function RootLayout() {
     <>
       <Wrapper>
         <SideNav />
-        <Outlet />
+        <OutletWrapper>
+          <NavBar />
+          <Outlet />
+        </OutletWrapper>
       </Wrapper>
     </>
   );

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // import { useHistory } from "react-router-dom";
 // import { authService } from "../fbCode/fbase.js";
 
@@ -14,6 +15,7 @@ const TimelineWrapper = styled.div`
   display: flex;
   gap: 10px;
   flex-direction: column;
+  width: 100%;
 `;
 
 const Wrapper = styled.div`
@@ -21,6 +23,8 @@ const Wrapper = styled.div`
   align-items: center;
   flex-direction: column;
   gap: 20px;
+  margin-top: 5px;
+  width: 100%;
 `;
 const AvatarUpload = styled.label`
   width: 80px;
@@ -65,7 +69,9 @@ const NameInput = styled.input`
   font-size: 16px;
 `;
 
-export default function Profile() {
+export default function Profile(props: any) {
+  const { anotherUserUid } = props;
+
   const limitCount = 30;
   const user = auth.currentUser;
 
@@ -79,8 +85,9 @@ export default function Profile() {
 
   const getVreadList = async (limitStart: string | null) => {
     if (isProLoading) return;
-
-    const vreadsResult = await getVreads(user?.uid, limitCount, limitStart);
+    let uid = user?.uid;
+    if (anotherUserUid) uid = anotherUserUid;
+    const vreadsResult = await getVreads(2, uid, limitCount, limitStart, null);
 
     if (vreadsResult.state == false) {
       return;
@@ -102,6 +109,8 @@ export default function Profile() {
   // 주의!!! 해당 파일 선택창 동작은 onClick 이 아닌 onChange 로 해야함
   //  파일을 선택하면 input 안에 경로를 넣는 형식이라 onChange로 해야 됨
   const onProfileImgChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    // 만약 다른 userUid로 들어온 페이지면 ...
+    if (anotherUserUid) return;
     // setIsProLoading(true);
     setProfileError("");
     const { files } = e.target;
@@ -130,6 +139,8 @@ export default function Profile() {
 
   // 닉네임 눌렀을때 수정칸 띄우기
   const onClickNameHandler = () => {
+    // 만약 다른 userUid로 들어온 페이지면 ...
+    if (anotherUserUid) return;
     setIsClickName((state) => !state);
   };
 
@@ -143,6 +154,9 @@ export default function Profile() {
 
   const onNameUpdateHandler = async (e: React.ChangeEvent<HTMLFormElement>) => {
     e.preventDefault();
+    // 만약 다른 userUid로 들어온 페이지면 ...
+    if (anotherUserUid) return;
+
     if (isProLoading) return;
 
     setIsProLoading(true);

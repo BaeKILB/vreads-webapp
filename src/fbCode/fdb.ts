@@ -6,6 +6,7 @@ import {
   doc,
   getDocs,
   limit,
+  or,
   orderBy,
   query,
   startAfter,
@@ -21,14 +22,17 @@ import {
 } from "firebase/storage";
 import { FirebaseError } from "firebase/app";
 import { updateProfile } from "firebase/auth";
+import { updateUserInfo } from "./fLogin";
 
 // Vread 게시글 인터페이스
 export interface IVread {
   userId: string;
   username: string;
+  userPhoto: string;
   photo: string;
   vtTitle: string;
   vtDetail: string;
+  vtSubtag: string;
   createDate: number;
   modifyDate: number;
   id: string;
@@ -36,22 +40,29 @@ export interface IVread {
 
 // 특정 유저의 vread 리스트 받아오기
 export const getVreads = async (
-  uid: string | undefined,
+  queryType: number, // vread리스트 받아오는 쿼리 형식 지정 0: 기본, 1: uid 으로만 검색, 2: uid+ limitstart, 3:키워드 제목 검색, 4: 키워드 내용 검색
+  uid: string | undefined | null,
   limitCount: number,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  limitStart: any | null // orderby 에 해당하는 값을 넣으면 거기서 부터 시작하여 로드함
+  limitStart: any | null, // orderby 에 해당하는 값을 넣으면 거기서 부터 시작하여 로드함
+  searchKeyword: string | undefined | null
 ) => {
   // 기존의 실시간 아닌 방식으로 snapshot 받아오기
   try {
     let vreadsQuery = query(
       collection(db, "vreads"),
-      where("userId", "==", uid),
-      orderBy("createDate", "desc"),
-      limit(limitCount)
+      orderBy("createDate", "desc")
     );
+    if (uid && queryType == 1) {
+      vreadsQuery = query(
+        collection(db, "vreads"),
+        where("userId", "==", uid),
+        orderBy("createDate", "desc"),
+        limit(limitCount)
+      );
+    }
 
-    if (limitStart && limitStart !== "") {
-      console.log("liststart");
+    if (limitStart && limitStart !== "" && queryType == 2) {
       vreadsQuery = query(
         collection(db, "vreads"),
         where("userId", "==", uid),
@@ -60,14 +71,46 @@ export const getVreads = async (
         limit(limitCount)
       );
     }
+
+    if (searchKeyword && queryType == 3) {
+      vreadsQuery = query(
+        collection(db, "vreads"),
+        or(
+          where("vtTitle", "==", searchKeyword),
+          where("vtDetail", "==", searchKeyword)
+        ),
+        orderBy("createDate", "desc"),
+        startAfter(limitStart),
+        limit(limitCount)
+      );
+    } else if (searchKeyword && queryType == 4) {
+      vreadsQuery = query(
+        collection(db, "vreads"),
+        where("username", "==", searchKeyword),
+        orderBy("createDate", "desc"),
+        startAfter(limitStart),
+        limit(limitCount)
+      );
+    } else if (searchKeyword && queryType == 5) {
+      vreadsQuery = query(
+        collection(db, "vreads"),
+        where("vtSubtag", "==", searchKeyword),
+        orderBy("createDate", "desc"),
+        startAfter(limitStart),
+        limit(limitCount)
+      );
+    }
+
     const snapshot = await getDocs(vreadsQuery);
     const vreads = snapshot.docs.map((doc) => {
       const {
         vtTitle,
         vtDetail,
+        vtSubtag,
         userId,
         username,
         photo,
+        userPhoto,
         createDate,
         modifyDate,
       } = doc.data();
@@ -75,8 +118,10 @@ export const getVreads = async (
         id: doc.id,
         vtTitle,
         vtDetail,
+        vtSubtag,
         userId,
         username,
+        userPhoto,
         photo,
         createDate,
         modifyDate,
@@ -92,16 +137,22 @@ export const getVreads = async (
 export const addVread = async (
   uid: string | undefined,
   displayName: string | null | undefined,
+  userPhoto: string | null | undefined,
   vtTitle: string,
   vtDetail: string,
+  vtSubtag: string,
   file: File | null
 ) => {
+  const user = auth.currentUser;
+  if (!user) return;
   try {
     const doc = await addDoc(collection(db, "vreads"), {
       userId: uid,
       username: displayName || "Vaker",
+      userPhoto: userPhoto || "",
       vtTitle,
       vtDetail,
+      vtSubtag,
       createDate: Date.now(),
       modifyDate: 0,
     });
@@ -133,6 +184,7 @@ export const updateVread = async (
   docId: string,
   vtTitle: string,
   vtDetail: string,
+  vtSubtag: string,
   file: any
 ) => {
   const user = auth.currentUser;
@@ -141,8 +193,10 @@ export const updateVread = async (
     const docRef = doc(db, "vreads", docId);
     await updateDoc(docRef, {
       username: user.displayName,
+      userPhoto: user.photoURL,
       vtTitle,
       vtDetail,
+      vtSubtag,
       modifyDate: Date.now(),
     });
     console.log("1");
@@ -228,6 +282,9 @@ export const updateUser = async (profileData: any) => {
 
     displayName !== "" && (await updateProfile(user, { displayName }));
     photoURL !== "" && (await updateProfile(user, { photoURL }));
+
+    await updateUserInfo(user?.displayName, user?.email, user?.photoURL);
+    // 현 vread 들의 이름, photoURL 바꾸기
 
     return { state: true, error: "", photoURL };
   } catch (e: any) {

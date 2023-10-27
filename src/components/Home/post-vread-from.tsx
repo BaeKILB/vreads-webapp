@@ -10,7 +10,11 @@ import { Error } from "../../style/auth-components";
 import { addVread, updateVread } from "../../fbCode/fdb";
 
 export default function PostVreadForm(props: any) {
-  const [vtData, setVtData] = useState({ vtTitle: "", vtDetail: "" });
+  const [vtData, setVtData] = useState({
+    vtTitle: "",
+    vtDetail: "",
+    vtSubtag: "",
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -26,8 +30,8 @@ export default function PostVreadForm(props: any) {
   //useEffect 활용
   useEffect(() => {
     if (isModify) {
-      const { vtTitle, vtDetail } = props.vread;
-      setVtData({ vtTitle, vtDetail });
+      const { vtTitle, vtDetail, vtSubtag } = props.vread;
+      setVtData({ vtTitle, vtDetail, vtSubtag });
     }
   }, []);
 
@@ -61,6 +65,11 @@ export default function PostVreadForm(props: any) {
       setVtData((state) => {
         return { ...state, vtDetail: value };
       });
+    } else if (name === "vt_subtag") {
+      textAreaResizeHandler(false);
+      setVtData((state) => {
+        return { ...state, vtSubtag: value };
+      });
     }
   };
 
@@ -72,7 +81,7 @@ export default function PostVreadForm(props: any) {
   };
 
   const onSubmitHandler = async (e: React.FormEvent<HTMLFormElement>) => {
-    const { vtTitle, vtDetail } = vtData;
+    const { vtTitle, vtDetail, vtSubtag } = vtData;
     const user = auth.currentUser;
 
     e.preventDefault();
@@ -83,13 +92,16 @@ export default function PostVreadForm(props: any) {
       isLoading ||
       vtTitle === "" ||
       vtTitle.length > 120 ||
-      vtDetail.length > 1500
+      vtDetail.length > 1500 ||
+      vtSubtag.length > 20
     ) {
       if (vtTitle === "") setError("Vread need title");
       if (vtTitle.length >= 120)
         setError("Vread's title do not over length 120");
       if (vtDetail.length > 1500)
         setError("Vread's detail do not over length 1500 ");
+      if (vtSubtag.length > 20)
+        setError("Vread's detail do not over length 20 ");
       return;
     }
 
@@ -104,7 +116,7 @@ export default function PostVreadForm(props: any) {
     if (isModify) {
       const { id } = props.vread;
 
-      result = await updateVread(id, vtTitle, vtDetail, file);
+      result = await updateVread(id, vtTitle, vtDetail, vtSubtag, file);
 
       // onUpdateReload 를 동작시켜 현재 업데이트된 항목부터 불러오게 하기
       if (props.onUpdateReload) props.onUpdateReload();
@@ -113,8 +125,10 @@ export default function PostVreadForm(props: any) {
       result = await addVread(
         user?.uid,
         user?.displayName,
+        user?.photoURL,
         vtTitle,
         vtDetail,
+        vtSubtag,
         file
       );
       console.log(result);
@@ -128,7 +142,7 @@ export default function PostVreadForm(props: any) {
     }
 
     // post 보내고 난 뒤 값들 초기화 시키기
-    setVtData({ vtTitle: "", vtDetail: "" });
+    setVtData({ vtTitle: "", vtDetail: "", vtSubtag: "" });
     setFile(null);
     setIsLoading(false);
     textAreaResizeHandler(true);
@@ -160,6 +174,15 @@ export default function PostVreadForm(props: any) {
           ref={textarea}
           onChange={onChangeHandler}
           maxLength={1500}
+        />
+        <Input
+          value={vtData.vtSubtag}
+          type="text"
+          placeholder="Enter subtag"
+          name="vt_subtag"
+          maxLength={20}
+          className="hash"
+          onChange={onChangeHandler}
         />
         <FileButton htmlFor={isModify ? "modifyFile" : "file"}>
           {file ? "Photo added ✅" : "Add photo"}

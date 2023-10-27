@@ -13,6 +13,32 @@ const Wrapper = styled.div`
   border-radius: 15px;
 `;
 
+const PlofileWrap = styled.article`
+  display: flex;
+  justify-content: left;
+  align-items: center;
+  height: 55px;
+`;
+
+const ProfileImgWrap = styled.label`
+  width: 50px;
+  overflow: hidden;
+  height: 50px;
+  border-radius: 50%;
+  background-color: #fcbb79;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  svg {
+    width: 50px;
+  }
+`;
+
+const ProfileImg = styled.img`
+  width: 100%;
+`;
+
 const Column = styled.div`
   &:last-child {
     place-self: end;
@@ -30,8 +56,7 @@ const Username = styled.span`
   padding: 5px 3px;
   font-weight: 600;
   font-size: 15px;
-  border: 1px solid #fcbb79;
-  border-radius: 5px;
+  margin-left: 5px;
 `;
 
 const Payload = styled.p`
@@ -48,6 +73,22 @@ const DatePayload = styled.p`
   margin: 10px 0px;
   font-size: 12px;
   font-style: italic;
+`;
+const SubTagPayload = styled.p`
+  margin: 10px 0px;
+  font-size: 15px;
+  font-style: italic;
+  font-weight: bold;
+  color: #fcbb79;
+  display: inline-block;
+  padding: 5px;
+
+  border: 2px solid #fffbf81d;
+  border-radius: 10px;
+  &:hover {
+    cursor: pointer;
+    border: 2px solid #fcbb79;
+  }
 `;
 
 const ReadMoreP = styled.div`
@@ -106,9 +147,11 @@ export default function Vread(props: any) {
   const {
     vtTitle,
     vtDetail,
+    vtSubtag,
     userId,
     username,
     photo,
+    userPhoto,
     createDate,
     modifyDate,
     id,
@@ -170,7 +213,16 @@ export default function Vread(props: any) {
     <Wrapper>
       {error !== "" && <Error>{error}</Error>}
       <Column>
-        <Username>{username}</Username>
+        <PlofileWrap>
+          <ProfileImgWrap>
+            {userPhoto ? (
+              <ProfileImg src={userPhoto} />
+            ) : (
+              <ProfileImg src="/profile1-svgrepo-com.svg" />
+            )}
+          </ProfileImgWrap>
+          <Username>{username}</Username>
+        </PlofileWrap>
         <Payload className="vt_title">
           {vtTitle}{" "}
           {modifyDateCheck == true && <ModifySpan>(Edited)</ModifySpan>}
@@ -191,6 +243,7 @@ export default function Vread(props: any) {
             )}
           </>
         )}
+        {vtSubtag && <SubTagPayload>SubTag : {vtSubtag}</SubTagPayload>}
         <DatePayload>{vdString}</DatePayload>
         {user?.uid === userId && (
           <>
