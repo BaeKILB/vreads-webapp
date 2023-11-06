@@ -62,6 +62,8 @@ export default function SearchSubtag() {
   const [isSearchLoading, setIsSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState("");
   const [searchVreads, setSearchVreads] = useState<IVread[]>([]);
+
+  // url 파라미터 들고오기
   const { subTag } = useParams();
 
   const onChangeKeywordHandler = (e: React.ChangeEvent<HTMLInputElement>) => {

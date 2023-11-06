@@ -146,16 +146,16 @@ export default function Vread(props: any) {
   const [clickUpdateBtn, setClickUpdateBtn] = useState(false);
   const [isDetailReadMore, setIsDetailReadMore] = useState(false);
   const {
-    vtTitle,
-    vtDetail,
-    vtSubtag,
-    userId,
-    username,
-    photo,
-    userPhoto,
-    createDate,
-    modifyDate,
-    id,
+    vd_vtTitle,
+    vd_vtDetail,
+    vd_subtag,
+    mem_idx,
+    mem_nickname,
+    vd_media_1,
+    mem_profileImageUrl,
+    vd_createDate,
+    vd_modifyDate,
+    // vreads_idx,
   } = props.vread;
 
   const navi = useNavigate();
@@ -168,11 +168,11 @@ export default function Vread(props: any) {
   const onDeleteHandler = async () => {
     setError("");
     const isComfirm = confirm("Are you sure you want to delete this Vread?");
-    if (!isComfirm || user?.uid !== userId) {
+    if (!isComfirm || user?.uid !== mem_idx) {
       return;
     }
 
-    const result = await deleteVread(id, user?.uid, photo);
+    const result = await deleteVread("id", user?.uid, vd_media_1);
     if (!result.state) {
       setError(result.error);
     }
@@ -188,14 +188,14 @@ export default function Vread(props: any) {
   // 날짜 관련
 
   let vreadDate: number = 0;
-  if (createDate) {
-    vreadDate = createDate;
+  if (vd_createDate) {
+    vreadDate = vd_createDate;
   }
 
   // 만약 변경된 날짜가 있으면 변경됨 띄우기위한 코드
-  let modifyDateCheck: boolean = false;
-  if (modifyDate && modifyDate !== 0) {
-    modifyDateCheck = true;
+  let vd_modifyDateCheck: boolean = false;
+  if (vd_modifyDate && vd_modifyDate !== 0) {
+    vd_modifyDateCheck = true;
   }
 
   // 날짜 셋팅
@@ -205,7 +205,7 @@ export default function Vread(props: any) {
 
   // 더보기 버튼 띄우기 셋팅
   let detailReadMore = false;
-  if (vtDetail && vtDetail !== "" && vtDetail.length > 150) {
+  if (vd_vtDetail && vd_vtDetail !== "" && vd_vtDetail.length > 150) {
     // 150 자 이상일때 텍스트 뒤 내용을 ... 처리
 
     //버튼 띄우기
@@ -215,28 +215,28 @@ export default function Vread(props: any) {
     <Wrapper>
       {error !== "" && <Error>{error}</Error>}
       <Column>
-        <PlofileWrap onClick={() => navi("/profile/" + userId)}>
+        <PlofileWrap onClick={() => navi("/profile/" + mem_idx)}>
           <ProfileImgWrap>
-            {userPhoto ? (
-              <ProfileImg src={userPhoto} />
+            {mem_profileImageUrl ? (
+              <ProfileImg src={mem_profileImageUrl} />
             ) : (
               <ProfileImg src="/profile1-svgrepo-com.svg" />
             )}
           </ProfileImgWrap>
-          <Username>{username}</Username>
+          <Username>{mem_nickname}</Username>
         </PlofileWrap>
         <Payload className="vt_title">
-          {vtTitle}{" "}
-          {modifyDateCheck == true && <ModifySpan>(Edited)</ModifySpan>}
+          {vd_vtTitle}{" "}
+          {vd_modifyDateCheck == true && <ModifySpan>(Edited)</ModifySpan>}
         </Payload>
-        {vtDetail !== "" && (
+        {vd_vtDetail !== "" && (
           <>
             <Payload>
               {detailReadMore
                 ? isDetailReadMore
-                  ? vtDetail
-                  : vtDetail.slice(0, 150) + "..."
-                : vtDetail}
+                  ? vd_vtDetail
+                  : vd_vtDetail.slice(0, 150) + "..."
+                : vd_vtDetail}
             </Payload>
             {detailReadMore && (
               <ReadMoreP onClick={onClickReadMoreHandler}>
@@ -245,13 +245,13 @@ export default function Vread(props: any) {
             )}
           </>
         )}
-        {vtSubtag && (
-          <SubTagPayload onClick={() => navi("/subtag/" + vtSubtag)}>
-            SubTag : {vtSubtag}
+        {vd_subtag && (
+          <SubTagPayload onClick={() => navi("/subtag/" + vd_subtag)}>
+            SubTag : {vd_subtag}
           </SubTagPayload>
         )}
         <DatePayload>{vdString}</DatePayload>
-        {user?.uid === userId && (
+        {user?.uid === mem_idx && (
           <>
             <DeleteButton onClick={onDeleteHandler}>delete</DeleteButton>
             <UpdateButton onClick={onClickUpdateForm}>Update</UpdateButton>
@@ -268,7 +268,7 @@ export default function Vread(props: any) {
         )}
       </Column>
 
-      <Column>{photo ? <Photo src={photo} /> : null}</Column>
+      <Column>{vd_media_1 ? <Photo src={vd_media_1} /> : null}</Column>
     </Wrapper>
   );
 }

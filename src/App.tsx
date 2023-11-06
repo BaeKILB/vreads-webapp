@@ -17,6 +17,8 @@ import LoginCheckRoute from "./components/auth-components/loginCheck.tsx";
 import { auth } from "./fbCode/fbase.ts";
 import SearchSubtag from "./routes/search/SearchSubtag.tsx";
 import SearchBakers from "./routes/search/SearchBakers.tsx";
+import SocialLogin from "./routes/Auth/SocialLogin.tsx";
+import EmptyRoot from "./components/emptyRoot.tsx";
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -62,14 +64,20 @@ function App() {
         { path: "", element: <Home /> },
         {
           path: "profile",
-          element: <Profile />,
-          children: [{ path: ":anotherUserUid", element: <Profile /> }],
+          element: <EmptyRoot />,
+          children: [
+            { index: true, element: <Profile /> },
+            { path: ":anotherUserUid", element: <Profile /> },
+          ],
         },
         { path: "search", element: <SearchVreads /> },
         {
           path: "subtag",
-          element: <SearchSubtag />,
-          children: [{ path: ":subTag", element: <SearchSubtag /> }],
+          element: <EmptyRoot />,
+          children: [
+            { index: true, element: <SearchSubtag /> },
+            { path: ":subTag", element: <SearchSubtag /> },
+          ],
         },
         { path: "bakers", element: <SearchBakers /> },
       ],
@@ -86,18 +94,35 @@ function App() {
       path: "login",
       element: (
         <LoginCheckRoute>
-          <Login />
+          <EmptyRoot />
         </LoginCheckRoute>
       ),
+      children: [
+        { index: true, element: <Login /> },
+        {
+          path: "google",
+          element: <SocialLogin />,
+        },
+      ],
     },
 
     {
       path: "createAccount",
       element: (
         <LoginCheckRoute>
-          <CreateAccount />
+          <EmptyRoot />
         </LoginCheckRoute>
       ),
+      children: [
+        {
+          index: true,
+          element: <CreateAccount />,
+        },
+        {
+          path: "google",
+          element: <SocialLogin />,
+        },
+      ],
     },
   ]);
 

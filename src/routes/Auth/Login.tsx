@@ -1,15 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { signInWithEmailAndPassword } from "firebase/auth";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-import { auth } from "../../fbCode/fbase";
 
 import { Error, Form, Title, Wrapper } from "../../style/auth-components";
 import { Input } from "../../style/Input";
 import { Button } from "../../style/Button";
 import GithubBtn from "../../components/auth-components/github-btn";
 import GoogleBtn from "../../components/auth-components/google-btn";
+import { loginSpring } from "../../components/springApi/springAuth";
 
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -29,9 +27,16 @@ const Login = () => {
       // 유효성 체크
       if (isLoading || email === "" || passwd === "") return;
       // 유저 로그인 동작
-      await signInWithEmailAndPassword(auth, email, passwd);
-
-      nav("/");
+      const result = await loginSpring(email, passwd);
+      if (result?.state === "true") {
+        nav("/");
+      } else {
+        setError(
+          "login error" + result?.state ||
+            " " + " : " + result?.error ||
+            "somthing error"
+        );
+      }
     } catch (e: any) {
       setError(e.message);
     } finally {

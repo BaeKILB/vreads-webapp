@@ -1,5 +1,6 @@
 import { NavLink } from "react-router-dom";
 import styled from "styled-components";
+import { checkToken } from "./springApi/springAuth";
 
 const NavBox = styled.nav`
   display: flex;
@@ -31,8 +32,48 @@ const NavItem = styled.img`
 `;
 
 export default function NavBar() {
+  const onTest = async () => {
+    const result = await checkToken();
+    console.log(result);
+  };
+
+  const onTest2 = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      return {
+        state: "emptyToken",
+        error: "토큰이 존재하지 않습니다!",
+        token: "",
+      };
+    }
+    const result = await fetch(
+      "http://localhost:8080/backend/api/auth/testToken",
+      {
+        method: "GET",
+        headers: {
+          Authorization: "Bearer " + token,
+        },
+      }
+    );
+    console.log(result);
+    if (result.status != 200) {
+      return {
+        state: "fetchError",
+        error: "결과를 받아오지 못했습니다!",
+        token: "",
+      };
+    }
+    const resultData = await result.json();
+    console.log(resultData);
+    if (resultData.newToken) {
+      localStorage.setItem("token", resultData.newToken);
+    }
+  };
+
   return (
     <NavBox>
+      <button onClick={onTest}>test</button>
+      <button onClick={onTest2}>test2</button>
       <NavLink to={"/search"}>
         <NavItem src="/bread-search.svg" />
       </NavLink>

@@ -47,10 +47,23 @@ export default function GoogleBtn() {
       if (e instanceof FirebaseError) setError(e.message);
     }
   };
+
+  const springOauth2Google = () => {
+    window.open(
+      "https://accounts.google.com/o/oauth2/auth?client_id=877951810439-pgeplp24bg2t9eej5ffdc7qlde2hjjnc.apps.googleusercontent.com&redirect_uri=http://localhost:5173/login/google&response_type=code&scope=https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile",
+      "googleLogin",
+      "width=600, height=700"
+    );
+  };
+
   return (
     <>
       {error !== "" && <Error>{error}</Error>}
-      <SocialBtn onClick={onGithubBtn}>
+      <SocialBtn className="hidden" onClick={onGithubBtn}>
+        <Logo src="/google-logo.svg"></Logo>
+        Countinue with Google
+      </SocialBtn>
+      <SocialBtn onClick={springOauth2Google}>
         <Logo src="/google-logo.svg"></Logo>
         Countinue with Google
       </SocialBtn>

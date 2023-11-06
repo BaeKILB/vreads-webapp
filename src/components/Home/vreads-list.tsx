@@ -2,15 +2,8 @@ import { useEffect, useState } from "react";
 import styled from "styled-components";
 import Vread from "./vread";
 import { IVread } from "../../fbCode/fdb";
-import { Unsubscribe } from "firebase/auth";
-import {
-  collection,
-  limit,
-  onSnapshot,
-  orderBy,
-  query,
-} from "firebase/firestore";
-import { db } from "../../fbCode/fbase";
+
+import { getAllVreads } from "../springApi/springVreads";
 
 const Wrapper = styled.div`
   display: flex;
@@ -24,16 +17,17 @@ export default function VreadsList() {
 
   useEffect(() => {
     // onSnapshot 받을시 반환되는 구독 해지에 사용할 unsubscribe 받을 상수 만들기
-    let unsubscribe: Unsubscribe | null = null; // Unsubscribe 또는 null 값이 될 수 있음 (초기값 null)
+    // let unsubscribe: Unsubscribe | null = null; // Unsubscribe 또는 null 값이 될 수 있음 (초기값 null)
 
     // async 사용하는 내부 메서드 만들기
     // vreads 받아오기
     const fetchVreads = async () => {
-      const vreadsQuery = query(
-        collection(db, "vreads"),
-        orderBy("createDate", "desc"),
-        limit(30)
-      );
+      const result = await getAllVreads();
+      // const vreadsQuery = query(
+      //   collection(db, "vreads"),
+      //   orderBy("createDate", "desc"),
+      //   limit(30)
+      // );
 
       // 기존의 실시간 아닌 방식으로 snapshot 받아오기
 
@@ -46,41 +40,42 @@ export default function VreadsList() {
 
       // 실시간으로 받아오기
       // 쿼리문, snapshot 반환되는 콜백 함수
-      unsubscribe = await onSnapshot(vreadsQuery, (snapshot) => {
-        const vreads = snapshot.docs.map((doc) => {
-          const {
-            vtTitle,
-            vtDetail,
-            vtSubtag,
-            userId,
-            username,
-            photo,
-            userPhoto,
-            createDate,
-            modifyDate,
-          } = doc.data();
-          return {
-            vtTitle,
-            vtDetail,
-            vtSubtag,
-            userId,
-            username,
-            photo,
-            userPhoto,
-            createDate,
-            modifyDate,
-            id: doc.id,
-          };
-        });
-        setVreads(vreads);
-      });
+      // unsubscribe = await onSnapshot(vreadsQuery, (snapshot) => {
+      //   const vreads = snapshot.docs.map((doc) => {
+      //     const {
+      //       vtTitle,
+      //       vtDetail,
+      //       vtSubtag,
+      //       userId,
+      //       username,
+      //       photo,
+      //       userPhoto,
+      //       createDate,
+      //       modifyDate,
+      //     } = doc.data();
+      //     return {
+      //       vtTitle,
+      //       vtDetail,
+      //       vtSubtag,
+      //       userId,
+      //       username,
+      //       photo,
+      //       userPhoto,
+      //       createDate,
+      //       modifyDate,
+      //       id: doc.id,
+      //     };
+      //   });
+      //   setVreads(result);
+      // });
+      setVreads(result.data);
     };
 
     // 메서드 실행
     fetchVreads();
     return () => {
       // 포커스 아웃시 구독 해제
-      unsubscribe && unsubscribe();
+      // unsubscribe && unsubscribe();
     };
   }, []);
 

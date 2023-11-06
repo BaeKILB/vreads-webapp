@@ -52,6 +52,41 @@ const CreateAccount = () => {
     console.log(formData);
   };
 
+  const onSubmitSpring = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError("");
+    try {
+      // 유효성 체크
+      if (isLoading || name === "" || email === "" || passwd === "") return;
+      // 유저 추가 동작
+      const createUserResult = await fetch(
+        "http://localhost:8080/backend/login/api/CreateUserPro",
+        {
+          credentials: "include",
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ name, email, passwd }),
+        }
+      );
+      const result = await createUserResult.json();
+      if (result.state == "false") {
+        setError(result.error);
+      } else {
+        console.log("create ok");
+        localStorage.setItem("token", result.token);
+        nav("/");
+      }
+    } catch (e: any) {
+      // 에러 형태가 firebase error일 경우
+      console.log(e.message);
+    } finally {
+      setIsLoading(false);
+    }
+    console.log(formData);
+  };
+
   const onChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e) return;
 
@@ -75,7 +110,7 @@ const CreateAccount = () => {
   return (
     <Wrapper>
       <Title>Sign up</Title>
-      <Form action="" onSubmit={onSubmitHandler}>
+      <Form action="" onSubmit={onSubmitSpring}>
         <Input
           type="text"
           placeholder="Name"

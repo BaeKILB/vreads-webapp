@@ -23,4 +23,7 @@ export const SocialBtn = styled.button`
   &.first {
     margin-top: 30px;
   }
+  &.hidden {
+    display: none;
+  }
 `;

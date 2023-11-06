@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { auth } from "../fbCode/fbase";
 import { FirebaseError } from "firebase/app";
 import styled from "styled-components";
+import { logoutSpring } from "./springApi/springAuth";
 
 const Menu = styled.div`
   display: flex;
@@ -53,7 +54,8 @@ export default function SideNav() {
 
     if (answer) {
       try {
-        await auth.signOut();
+        // 유저 로그아웃 동작
+        await logoutSpring();
         navi("/welcome");
       } catch (e: any) {
         if (e instanceof FirebaseError) {
