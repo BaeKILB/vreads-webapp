@@ -11,19 +11,40 @@ import {
   Textarea,
 } from "../../style/post-from";
 
-import { auth } from "../../fbCode/fbase";
 import { Error } from "../../style/auth-components";
-import { addVread, updateVread } from "../../fbCode/fdb";
+import {
+  VT_DETAIL_MAX_LENGTH,
+  VT_SUBTAG_MAX_LENGTH,
+  VT_TITLE_MAX_LENGTH,
+  addVread,
+} from "../springApi/springVreads";
 
 export default function PostVreadForm(props: any) {
+  // vread 데이터 담을 state
   const [vtData, setVtData] = useState({
     vtTitle: "",
     vtDetail: "",
     vtSubtag: "",
   });
   const [isLoading, setIsLoading] = useState(false);
+
   const [error, setError] = useState("");
+  // 이미지 파일
   const [file, setFile] = useState<File | null>(null);
+
+  // 만약 업데이트가 아닌 경우 게시글 올렸을때
+  // redux 를 이용해 다시 로드하는 코드를 만들기
+  // const dispatch = useDispatch();
+
+  // redux 에 있는 state 중 하나 가져오기
+  // const isReload = useSelector(
+  //   (state: vreadsGState) => state.ishomeVdListReload
+  // );
+
+  // const reloadList = () => {
+  //   dispatch(vdGStateActions.ishomeVdListReload(!isReload));
+  // };
+  const reloadList = props.onReloadToggle;
 
   //===========
   // 만약 update 버튼을 눌러 진입했을때
@@ -41,7 +62,7 @@ export default function PostVreadForm(props: any) {
     }
   }, []);
 
-  // vt_detail 줄 늘어나는것 구현
+  // vd_vtDetail 줄 늘어나는것 구현
   // ts 에서 useRef 사용시나 null 값 들어가는 경우 반드시 데이터 형식 지정해야함
   const textarea = useRef<HTMLTextAreaElement>(null);
 
@@ -62,16 +83,16 @@ export default function PostVreadForm(props: any) {
       target: { name, value },
     } = e;
 
-    if (name === "vt_title") {
+    if (name === "vd_vtTitle") {
       setVtData((state) => {
         return { ...state, vtTitle: value };
       });
-    } else if (name === "vt_detail") {
+    } else if (name === "vd_vtDetail") {
       textAreaResizeHandler(false);
       setVtData((state) => {
         return { ...state, vtDetail: value };
       });
-    } else if (name === "vt_subtag") {
+    } else if (name === "vd_subtag") {
       textAreaResizeHandler(false);
       setVtData((state) => {
         return { ...state, vtSubtag: value };
@@ -88,29 +109,9 @@ export default function PostVreadForm(props: any) {
 
   const onSubmitHandler = async (e: React.FormEvent<HTMLFormElement>) => {
     const { vtTitle, vtDetail, vtSubtag } = vtData;
-    const user = auth.currentUser;
 
     e.preventDefault();
-
-    // 유효성 체크
-    if (
-      !user ||
-      isLoading ||
-      vtTitle === "" ||
-      vtTitle.length > 120 ||
-      vtDetail.length > 1500 ||
-      vtSubtag.length > 20
-    ) {
-      if (vtTitle === "") setError("Vread need title");
-      if (vtTitle.length >= 120)
-        setError("Vread's title do not over length 120");
-      if (vtDetail.length > 1500)
-        setError("Vread's detail do not over length 1500 ");
-      if (vtSubtag.length > 20)
-        setError("Vread's detail do not over length 20 ");
-      return;
-    }
-
+    if (isLoading) return;
     setError("");
     setIsLoading(true);
 
@@ -120,27 +121,18 @@ export default function PostVreadForm(props: any) {
 
     // 만약 update버튼을 눌러 해당컴포넌트를 불러온 상태라면 updateVread로 동작하게 하기
     if (isModify) {
-      const { id } = props.vread;
-
-      result = await updateVread(id, vtTitle, vtDetail, vtSubtag, file);
-
       // onUpdateReload 를 동작시켜 현재 업데이트된 항목부터 불러오게 하기
       if (props.onUpdateReload) props.onUpdateReload();
       console.log(result);
     } else {
-      result = await addVread(
-        user?.uid,
-        user?.displayName,
-        user?.photoURL,
-        vtTitle,
-        vtDetail,
-        vtSubtag,
-        file
-      );
+      // vread 추가
+      result = await addVread(vtTitle, vtDetail, vtSubtag, file);
       console.log(result);
+      // vreads 다시 불러오기
+      reloadList();
     }
 
-    if (!result && result.state == false) {
+    if (!result || result.state !== "true") {
       setError(result.error ? result.error : "Something error");
 
       setIsLoading(false);
@@ -152,6 +144,7 @@ export default function PostVreadForm(props: any) {
     setFile(null);
     setIsLoading(false);
     textAreaResizeHandler(true);
+
     if (isModify) {
       props.closeForm();
     }
@@ -165,8 +158,8 @@ export default function PostVreadForm(props: any) {
           value={vtData.vtTitle}
           type="text"
           placeholder="title"
-          name="vt_title"
-          maxLength={120}
+          name="vd_vtTitle"
+          maxLength={VT_TITLE_MAX_LENGTH}
           className="title"
           onChange={onChangeHandler}
           required
@@ -175,23 +168,23 @@ export default function PostVreadForm(props: any) {
           value={vtData.vtDetail}
           type="text"
           placeholder="What's on your mind?"
-          name="vt_detail"
+          name="vd_vtDetail"
           className="detail"
           ref={textarea}
           onChange={onChangeHandler}
-          maxLength={1500}
+          maxLength={VT_DETAIL_MAX_LENGTH}
         />
         <BtnWarp>
           <Input
             value={vtData.vtSubtag}
             type="text"
             placeholder="Enter subtag"
-            name="vt_subtag"
-            maxLength={20}
+            name="vd_subtag"
+            maxLength={VT_SUBTAG_MAX_LENGTH}
             className="hash"
             onChange={onChangeHandler}
           />
-          <FileButton htmlFor={isModify ? "modifyFile" : "file"}>
+          <FileButton htmlFor={isModify ? "modifyFile1" : "file1"}>
             {file ? (
               <img src={URL.createObjectURL(file)} alt="Image upload file" />
             ) : (
@@ -201,7 +194,7 @@ export default function PostVreadForm(props: any) {
           <FileInput
             onChange={onFileAddHandler}
             type="file"
-            id={isModify ? "modifyFile" : "file"}
+            id={isModify ? "modifyFile1" : "file1"}
             accept="image/*"
           />
           <Button type="submit">

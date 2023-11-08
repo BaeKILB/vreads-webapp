@@ -1,17 +1,21 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { useState } from "react";
-
-import { auth } from "../../fbCode/fbase";
 
 import { useNavigate } from "react-router-dom";
 import { Button } from "../../style/Button";
 import { Input } from "../../style/Input";
-import { FirebaseError } from "firebase/app";
 import { Error, Form, Title, Wrapper } from "../../style/auth-components";
 import GithubBtn from "../../components/auth-components/github-btn";
 import GoogleBtn from "../../components/auth-components/google-btn";
-import { addUserInfo } from "../../fbCode/fLogin";
+import {
+  MEM_MAX_EMAIL_LENGTH,
+  MEM_MAX_NICKNAME_LENGTH,
+  MEM_MAX_PASSWD_LENGTH,
+  MEM_MIN_EMAIL_LENGTH,
+  MEM_MIN_NICKNAME_LENGTH,
+  MEM_MIN_PASSWD_LENGTH,
+  signupSpring,
+} from "../../components/springApi/springAuth";
 
 const CreateAccount = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -26,57 +30,21 @@ const CreateAccount = () => {
 
   const { name, email, passwd } = formData;
 
-  const onSubmitHandler = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    try {
-      // 유효성 체크
-      if (isLoading || name === "" || email === "" || passwd === "") return;
-      // 유저 추가 동작
-      const createUserResult = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        passwd
-      );
-      console.log(createUserResult.user);
-      await updateProfile(createUserResult.user, { displayName: name });
-
-      await addUserInfo(createUserResult.user.uid, name, email, 0, null);
-      nav("/");
-    } catch (e: any) {
-      // 에러 형태가 firebase error일 경우
-      if (e instanceof FirebaseError) setError(e.message);
-      console.log(e.message);
-    } finally {
-      setIsLoading(false);
-    }
-    console.log(formData);
-  };
-
   const onSubmitSpring = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
     try {
-      // 유효성 체크
-      if (isLoading || name === "" || email === "" || passwd === "") return;
-      // 유저 추가 동작
-      const createUserResult = await fetch(
-        "http://localhost:8080/backend/login/api/CreateUserPro",
-        {
-          credentials: "include",
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ name, email, passwd }),
-        }
-      );
-      const result = await createUserResult.json();
-      if (result.state == "false") {
-        setError(result.error);
+      const result = await signupSpring(name, email, passwd);
+
+      if (!result) {
+        setError("회원가입 중 문제가 발생했습니다!");
       } else {
-        console.log("create ok");
-        localStorage.setItem("token", result.token);
-        nav("/");
+        if (result.state != "true") {
+          setError(result.error);
+        } else {
+          console.log("create ok");
+          nav("/");
+        }
       }
     } catch (e: any) {
       // 에러 형태가 firebase error일 경우
@@ -115,6 +83,8 @@ const CreateAccount = () => {
           type="text"
           placeholder="Name"
           name="name"
+          minLength={MEM_MIN_NICKNAME_LENGTH}
+          maxLength={MEM_MAX_NICKNAME_LENGTH}
           required
           value={name}
           onChange={onChangeHandler}
@@ -123,6 +93,8 @@ const CreateAccount = () => {
           type="email"
           placeholder="Email"
           name="email"
+          minLength={MEM_MIN_EMAIL_LENGTH}
+          maxLength={MEM_MAX_EMAIL_LENGTH}
           required
           value={email}
           onChange={onChangeHandler}
@@ -131,6 +103,8 @@ const CreateAccount = () => {
           type="password"
           placeholder="Password"
           name="passwd"
+          minLength={MEM_MIN_PASSWD_LENGTH}
+          maxLength={MEM_MAX_PASSWD_LENGTH}
           required
           value={passwd}
           onChange={onChangeHandler}

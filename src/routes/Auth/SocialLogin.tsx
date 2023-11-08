@@ -11,7 +11,9 @@ export default function SocialLogin() {
 
       // 유저 추가 동작
       const createUserResult = await fetch(
-        "http://localhost:8080/backend/login/oauth2/code/google?" + params,
+        import.meta.env.VITE_APP_SPRING_API_URL +
+          "login/oauth2/code/google?" +
+          params,
         {
           credentials: "include",
         }

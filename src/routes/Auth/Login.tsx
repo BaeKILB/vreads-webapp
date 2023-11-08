@@ -28,14 +28,12 @@ const Login = () => {
       if (isLoading || email === "" || passwd === "") return;
       // 유저 로그인 동작
       const result = await loginSpring(email, passwd);
-      if (result?.state === "true") {
-        nav("/");
-      } else {
-        setError(
-          "login error" + result?.state ||
-            " " + " : " + result?.error ||
-            "somthing error"
-        );
+      if (result) {
+        if (result?.state === "true") {
+          nav("/");
+        } else {
+          setError(result.error);
+        }
       }
     } catch (e: any) {
       setError(e.message);

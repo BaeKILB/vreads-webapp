@@ -13,12 +13,14 @@
 import * as ReactDOMClient from "react-dom/client";
 
 import App from "./App.tsx";
+import { Provider } from "react-redux";
+import store from "./store/store.ts";
 
 const rootEl = document.getElementById("root");
 if (!rootEl) throw new Error("Error render root");
 const root = ReactDOMClient.createRoot(rootEl);
 root.render(
-  <>
+  <Provider store={store}>
     <App />
-  </>
+  </Provider>
 );

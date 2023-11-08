@@ -1,5 +1,4 @@
 import * as React from "react";
-import { auth } from "../../fbCode/fbase";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../../style/Button";
 import styled from "styled-components";
@@ -13,7 +12,7 @@ export default function LoginCheckRoute({
 }) {
   const navi = useNavigate();
   // 로그인 되어있는지 확인하기
-  const user = auth.currentUser;
+  const user = localStorage.getItem("token");
   const backPageHandler = () => navi(-1);
 
   const Wrapper = styled.div`
