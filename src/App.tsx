@@ -14,7 +14,6 @@ import SearchVreads from "./routes/search/SearchVreads.tsx";
 import ProtectedRoute from "./components/auth-components/protected-route.tsx";
 import LoginCheckRoute from "./components/auth-components/loginCheck.tsx";
 
-import { auth } from "./fbCode/fbase.ts";
 import SearchSubtag from "./routes/search/SearchSubtag.tsx";
 import SearchBakers from "./routes/search/SearchBakers.tsx";
 import SocialLogin from "./routes/Auth/SocialLogin.tsx";
@@ -23,9 +22,6 @@ import EmptyRoot from "./components/emptyRoot.tsx";
 function App() {
   const [isLoading, setIsLoading] = useState(true);
   const init = async () => {
-    // firebase 가 쿠키와 토큰을 읽고 로그인 여부를 확인하는 메서드
-    await auth.authStateReady();
-
     setIsLoading(false);
   };
 

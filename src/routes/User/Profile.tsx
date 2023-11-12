@@ -3,15 +3,19 @@
 // import { authService } from "../fbCode/fbase.js";
 
 import { useEffect, useState } from "react";
-import { auth } from "../../fbCode/fbase";
-
-import { IVread, getVreads, updateUser } from "../../fbCode/fdb";
 import Vread from "../../components/Home/vread";
 import { Button } from "../../style/Button";
 import { Error } from "../../style/etc_style";
 import styled from "styled-components";
 import { useNavigate, useParams } from "react-router-dom";
-import { getUserInfo } from "../../fbCode/fLogin";
+import { IUser, springUserInfo } from "../../components/springApi/springUser";
+import {
+  IVread,
+  SET_PAGE_LIST_LIMIT_INIT,
+  START_COUNT_INIT,
+  getUserVreads,
+} from "../../components/springApi/springVreads";
+import { updateUser } from "../../fbCode/fdb";
 
 const TimelineWrapper = styled.div`
   display: flex;
@@ -73,27 +77,41 @@ const NameInput = styled.input`
 
 export default function Profile() {
   const [user, setUser] = useState({ uid: "", displayName: "", photoURL: "" });
+
+  const [profileImg, setProfileImg] = useState(user?.photoURL);
+  const [nameInput, setNameInput] = useState(user?.displayName);
+  const [vreads, setVreads] = useState<IVread[]>([]);
+  const [profileError, setProfileError] = useState("");
+
+  const [startCount, setStartCount] = useState(START_COUNT_INIT);
+  const [pageListLimit, setPageListLimit] = useState(SET_PAGE_LIST_LIMIT_INIT);
+
+  const [isClickName, setIsClickName] = useState(false);
+  const [isProLoading, setIsProLoading] = useState(false);
+
   const navi = useNavigate();
   // 다른 유저 페이지로 접근시
   const { anotherUserUid } = useParams();
-  const limitCount = 30;
 
   const getAnotherUserInfo = async () => {
     if (!anotherUserUid || anotherUserUid === "") {
-      const userTemp = auth.currentUser;
+      const result = await springUserInfo("");
+      const userTemp: IUser = result.data;
 
-      if (userTemp?.uid || userTemp?.displayName || userTemp?.photoURL) {
+      if (userTemp) {
         setUser({
-          uid: userTemp.uid,
-          displayName: userTemp.displayName || "",
-          photoURL: userTemp.photoURL || "",
+          uid: userTemp.mem_idx.toString(),
+          displayName: userTemp.mem_nickname || "",
+          photoURL: userTemp.mem_profileImageUrl || "",
         });
-        setProfileImg(userTemp.photoURL || "");
+        setProfileImg(userTemp.mem_profileImageUrl || "");
+      } else {
+        setProfileError(result.error);
       }
       return;
     }
 
-    const resultInfo = await getUserInfo(anotherUserUid);
+    const resultInfo = await springUserInfo(anotherUserUid);
     if (!resultInfo.user || resultInfo.state === false) {
       navi("/");
     } else {
@@ -107,35 +125,47 @@ export default function Profile() {
     }
   };
 
-  const [profileImg, setProfileImg] = useState(user?.photoURL);
-  const [nameInput, setNameInput] = useState(user?.displayName);
-  const [vreads, setVreads] = useState<IVread[]>([]);
-  const [profileError, setProfileError] = useState("");
-
-  const [isClickName, setIsClickName] = useState(false);
-  const [isProLoading, setIsProLoading] = useState(false);
-
-  const getVreadList = async (limitStart: string | null) => {
+  const getVreadList = async (isSearchMore: boolean) => {
     if (isProLoading) return;
-    let uid = user?.uid;
-    if (anotherUserUid) uid = anotherUserUid;
-    console.log(uid);
-    const vreadsResult = await getVreads(1, uid, limitCount, limitStart, null);
 
-    if (vreadsResult.state == false) {
+    let uid = localStorage.getItem("uid");
+
+    if (anotherUserUid) uid = anotherUserUid;
+
+    if (!uid) {
+      setProfileError("유저 번호를 받을수 없습니다 !");
       return;
     }
-    if (vreadsResult.vreads) {
-      setVreads(vreadsResult.vreads);
 
-      console.log(vreadsResult.vreads);
+    if (!isSearchMore) setStartCount(START_COUNT_INIT);
+    else setStartCount((state) => state + SET_PAGE_LIST_LIMIT_INIT);
+
+    if (!isSearchMore) setPageListLimit(SET_PAGE_LIST_LIMIT_INIT);
+    else setPageListLimit((state) => state + SET_PAGE_LIST_LIMIT_INIT);
+
+    // uid로 검색은 0 .. 그리고
+    const vreadsResult = await getUserVreads(
+      uid,
+      "0",
+      "",
+      0,
+      startCount,
+      pageListLimit
+    );
+
+    if (vreadsResult.state !== "true") {
+      setProfileError(vreadsResult.error);
+      return;
+    }
+    if (vreadsResult.data) {
+      setVreads(vreadsResult.data);
     }
   };
 
   // Vread list 받기
   useEffect(() => {
     getAnotherUserInfo();
-    getVreadList(null);
+    getVreadList(false);
   }, []);
 
   //프로필 이미지 수정
@@ -245,9 +275,7 @@ export default function Profile() {
           ? vreads.map((vt) => (
               <Vread
                 key={vt.id + "_pro"}
-                onUpdateReload={() => {
-                  getVreadList(vt.createDate.toString());
-                }}
+                onUpdateReload={() => {}}
                 onReload={getVreadList}
                 vread={vt}
               />

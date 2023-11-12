@@ -1,7 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Link, useNavigate } from "react-router-dom";
-import { auth } from "../fbCode/fbase";
-import { FirebaseError } from "firebase/app";
 import styled from "styled-components";
 import { logoutSpring } from "./springApi/springAuth";
 
@@ -48,7 +46,9 @@ const AvatarImg = styled.img`
 
 export default function SideNav() {
   const navi = useNavigate();
-  const user = auth.currentUser;
+  const userPhoto = localStorage.getItem("userPhoto");
+  const profileImg = userPhoto ? userPhoto : "";
+
   const onLogoutHandler = async () => {
     const answer = confirm("정말 로그아웃 하시겠습니까?");
 
@@ -58,16 +58,11 @@ export default function SideNav() {
         await logoutSpring();
         navi("/welcome");
       } catch (e: any) {
-        if (e instanceof FirebaseError) {
-          alert("로그아웃중 문제가 발생했습니다! : " + e.message);
-        } else {
-          alert("로그아웃중 문제가 발생했습니다!");
-        }
+        alert("로그아웃중 문제가 발생했습니다! : " + e.message);
         console.log(e.message);
       }
     }
   };
-  const profileImg = user?.photoURL;
   return (
     <Menu>
       <Link to="/">

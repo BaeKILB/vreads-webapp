@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 import { Error, Form, Title, Wrapper } from "../../style/auth-components";
 import { Input } from "../../style/Input";
 import { Button } from "../../style/Button";
-import GithubBtn from "../../components/auth-components/github-btn";
 import GoogleBtn from "../../components/auth-components/google-btn";
 import { loginSpring } from "../../components/springApi/springAuth";
 
@@ -60,25 +59,6 @@ const Login = () => {
       });
   };
 
-  // const onSocialClick = async (e) => {
-  //   const {
-  //     target: { name },
-  //   } = e;
-
-  // let provider;
-
-  // if (name === "google") {
-  //   provider = new firebaseInstance.auth.GoogleAuthProvider();
-  // } else if (name === "github") {
-  //   provider = new firebaseInstance.auth.GithubAuthProvider();
-  // }
-  // try {
-  //   const data = await authService.signInWithPopup(provider);
-  // } catch (e) {
-  //   setError(error.message);
-  // }
-  // };
-
   return (
     <Wrapper>
       <Title>Sign in</Title>
@@ -101,7 +81,6 @@ const Login = () => {
         />
         <Button type="submit">{isLoading ? "Loading..." : "Sign in"}</Button>
       </Form>
-      <GithubBtn />
       <GoogleBtn />
       {error !== "" && <Error>{error}</Error>}
     </Wrapper>

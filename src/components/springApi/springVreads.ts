@@ -1,4 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
+// Vread 게시글 인터페이스
+export interface IVread {
+  userId: string;
+  username: string;
+  userPhoto: string;
+  photo: string;
+  vtTitle: string;
+  vtDetail: string;
+  vtSubtag: string;
+  createDate: number;
+  modifyDate: number;
+  id: string;
+}
+
 const apiUrl = import.meta.env.VITE_APP_SPRING_API_URL + "api/vread";
 
 export const VT_TITLE_MIN_LENGTH = 1;
@@ -8,6 +23,10 @@ export const VT_SUBTAG_MIN_LENGTH = 1;
 export const VT_TITLE_MAX_LENGTH = 120;
 export const VT_DETAIL_MAX_LENGTH = 1500;
 export const VT_SUBTAG_MAX_LENGTH = 20;
+
+// 한번 요청시 가져올 limit 값 초기값
+export const START_COUNT_INIT = 0;
+export const SET_PAGE_LIST_LIMIT_INIT = 15;
 
 export const addVread = async (
   vd_vtTitle: string,
@@ -92,5 +111,178 @@ export const getAllVreads = async () => {
 
   const resultData = await result.json();
   console.log(resultData);
+  return resultData;
+};
+
+//특정 유저 Vreads 불러오기
+/*
+	 * <!-- serchType -->
+	<!-- 0 = 유저uid 로만 검색 -->
+	<!-- 1 = 제목검색 -->
+	<!-- 2 = 제목과 타이틀 검색 -->
+	<!-- 3 = 서브태그 검색 -->
+	 * */
+// userSearchType
+// = 0 : uid 검색
+// = 1 : id 로 검색
+// db 검색시 이용할 값 셋팅
+export const getUserVreads = async (
+  userId: string,
+  userSearchType: string,
+  keyword: string,
+  searchType: number,
+  startCount: number,
+  setPageListLimit: number
+) => {
+  const token = localStorage.getItem("token");
+
+  if (!token || token === "") {
+    return {
+      state: "tokenError",
+      error: "토큰이 없거나 잘못된 값 입니다!",
+    };
+  }
+
+  // 유효성 체크
+  if (userSearchType === "" || searchType < 0) {
+    return {
+      state: "inputError",
+      error: "속성 값이 잘못되었습니다!",
+    };
+  }
+
+  // 만약 리미트값 잘못 되어있으면 초기값으로 하기
+  if (
+    !startCount ||
+    startCount < 0 ||
+    !setPageListLimit ||
+    setPageListLimit < 1
+  ) {
+    startCount = START_COUNT_INIT;
+    setPageListLimit = SET_PAGE_LIST_LIMIT_INIT;
+  }
+
+  const result = await fetch(apiUrl + "/user", {
+    credentials: "include",
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    },
+    body: JSON.stringify({
+      userId,
+      userSearchType,
+      keyword,
+      searchType,
+      startCount,
+      setPageListLimit,
+    }),
+  });
+
+  if (result.status != 200) {
+    console.log("통신중 문제가 발생했습니다" + result.status);
+    return {
+      state: "fetchError",
+      error: "통신중 문제가 발생했습니다" + result.status,
+    };
+  }
+
+  const resultData = await result.json();
+  if (!resultData) {
+    return {
+      state: "dataError",
+      error: "통신중 문제가 발생했습니다 데이터를 받지 못했습니다!",
+    };
+  }
+  if (resultData.state !== "true") {
+    return {
+      state: "dataError",
+      error:
+        "통신중 문제가 발생했습니다 데이터를 받지 못했습니다! : " +
+        resultData.error,
+    };
+  }
+
+  return resultData;
+};
+
+//search type 과 keyword 에 맞춰서 Vreads 불러오기
+/*
+	 * 	<!-- serchType -->
+	<!-- 1 = 제목검색 -->
+	<!-- 2 = 제목과 타이틀 검색 -->
+	<!-- 3 = 서브태그 검색 -->
+	 * */
+export const getSearchVreads = async (
+  keyword: string,
+  searchType: number,
+  startCount: number,
+  setPageListLimit: number
+) => {
+  const token = localStorage.getItem("token");
+
+  if (!token || token === "") {
+    return {
+      state: "tokenError",
+      error: "토큰이 없거나 잘못된 값 입니다!",
+    };
+  }
+  console.log(keyword);
+  console.log(searchType);
+  console.log(startCount);
+  console.log(setPageListLimit);
+  // 유효성 체크
+  if (searchType < 0 || startCount < 0 || setPageListLimit < 0) {
+    return {
+      state: "inputError",
+      error: "속성 값이 잘못되었습니다!",
+    };
+  }
+
+  const result = await fetch(apiUrl + "/search", {
+    credentials: "include",
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    },
+    body: JSON.stringify({
+      keyword,
+      searchType,
+      startCount,
+      setPageListLimit,
+    }),
+  });
+
+  if (result.status != 200) {
+    console.log("통신중 문제가 발생했습니다" + result.status);
+    return {
+      state: "fetchError",
+      error: "통신중 문제가 발생했습니다" + result.status,
+    };
+  }
+
+  const resultData = await result.json();
+  if (!resultData) {
+    return {
+      state: "dataError",
+      error: "통신중 문제가 발생했습니다 데이터를 받지 못했습니다!",
+    };
+  }
+  if (resultData.state !== "true") {
+    console.log(
+      "dataError : " +
+        resultData.state +
+        " 통신중 문제가 발생했습니다 데이터를 받지 못했습니다! : " +
+        resultData.error
+    );
+    return {
+      state: "dataError",
+      error:
+        "통신중 문제가 발생했습니다 데이터를 받지 못했습니다! : " +
+        resultData.error,
+    };
+  }
+
   return resultData;
 };

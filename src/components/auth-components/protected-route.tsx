@@ -9,7 +9,6 @@ export default function ProtectedRoute({
   children: React.ReactNode;
 }) {
   // 로그인 되어있는지 확인하기
-  // const user = auth.currentUser;
   const user = localStorage.getItem("token");
 
   if (!user) {

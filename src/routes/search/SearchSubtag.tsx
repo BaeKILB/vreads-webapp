@@ -1,10 +1,15 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { Input } from "../../style/Input";
-import { IVread, getVreads } from "../../fbCode/fdb";
 import { Error } from "../../style/etc_style";
 import Vread from "../../components/Home/vread";
 import { useParams } from "react-router-dom";
+import {
+  IVread,
+  SET_PAGE_LIST_LIMIT_INIT,
+  START_COUNT_INIT,
+  getSearchVreads,
+} from "../../components/springApi/springVreads";
 const Wrapper = styled.div`
   display: flex;
   align-items: center;
@@ -58,7 +63,8 @@ const SearchInputBox = styled.article`
 
 export default function SearchSubtag() {
   const [searchKeyword, setSearchKeyword] = useState("");
-  const [limitStart, setLimitStart] = useState("");
+  const [startCount, setStartCount] = useState(START_COUNT_INIT);
+  const [pageListLimit, setPageListLimit] = useState(SET_PAGE_LIST_LIMIT_INIT);
   const [isSearchLoading, setIsSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState("");
   const [searchVreads, setSearchVreads] = useState<IVread[]>([]);
@@ -77,27 +83,34 @@ export default function SearchSubtag() {
     isSearchMore: boolean,
     paramKeyword: string | null
   ) => {
-    const limit = 30;
-    if (!isSearchMore) setLimitStart("");
+    if (!isSearchMore) setStartCount(START_COUNT_INIT);
+    else setStartCount((state) => state + SET_PAGE_LIST_LIMIT_INIT);
+
+    if (!isSearchMore) setPageListLimit(SET_PAGE_LIST_LIMIT_INIT);
+    else setPageListLimit((state) => state + SET_PAGE_LIST_LIMIT_INIT);
+
+    // 로딩중이면 중복동작 안하도록
     if (isSearchLoading) return;
+
     setIsSearchLoading(true);
+
+    // 동작
+    //키워드 있는지 확인
+    // 또는 파라미터에 키워드 들고 오는경우 체크
     if (searchKeyword !== "" || (paramKeyword && paramKeyword !== "")) {
       setSearchError("");
       let kw = searchKeyword;
       if (paramKeyword && paramKeyword !== "") kw = paramKeyword;
-      const resultVreads = await getVreads(5, null, limit, limitStart, kw);
-      if (
-        !resultVreads ||
-        !resultVreads.vreads ||
-        resultVreads.state === false
-      ) {
-        setSearchError(resultVreads.error);
+
+      // getSearchVreads 에서 3번은 서브태그
+      const result = await getSearchVreads(kw, 3, startCount, pageListLimit);
+      if (result.state !== "true") {
+        setSearchError(result.error);
       } else {
-        // setLimitStart((state) => state + limit);
-        console.log(resultVreads.vreads);
+        const resultVreads = result.data;
         if (isSearchMore)
-          setSearchVreads((state) => [...state, ...resultVreads.vreads]);
-        else setSearchVreads(resultVreads.vreads);
+          setSearchVreads((state) => [...state, ...resultVreads]);
+        else setSearchVreads(resultVreads);
       }
     }
     setIsSearchLoading(false);

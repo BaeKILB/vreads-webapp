@@ -24,20 +24,6 @@ import { FirebaseError } from "firebase/app";
 import { updateProfile } from "firebase/auth";
 import { updateUserInfo } from "./fLogin";
 
-// Vread 게시글 인터페이스
-export interface IVread {
-  userId: string;
-  username: string;
-  userPhoto: string;
-  photo: string;
-  vtTitle: string;
-  vtDetail: string;
-  vtSubtag: string;
-  createDate: number;
-  modifyDate: number;
-  id: string;
-}
-
 // 특정 유저의 vread 리스트 받아오기
 export const getVreads = async (
   queryType: number, // vread리스트 받아오는 쿼리 형식 지정 0: 기본, 1: uid 으로만 검색, 2: uid+ limitstart, 3:키워드 제목 검색, 4: 키워드 내용 검색

@@ -1,39 +1,43 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect } from "react";
+import { useState } from "react";
+import { Button } from "../../style/Button";
+import { springSocialLogin } from "../../components/springApi/springAuth";
 
 export default function SocialLogin() {
   const params = new URLSearchParams(location.search);
+  const [error, setError] = useState("");
+
   const onSocialLogin = async () => {
     console.log(params);
 
-    try {
-      // 유효성 체크
+    const result = await springSocialLogin(params);
 
-      // 유저 추가 동작
-      const createUserResult = await fetch(
-        import.meta.env.VITE_APP_SPRING_API_URL +
-          "login/oauth2/code/google?" +
-          params,
-        {
-          credentials: "include",
-        }
-      );
-      const result = await createUserResult.json();
-      if (result.state == "false") {
-        console.log("error");
-      } else {
-        console.log("create ok");
-      }
-      // nav("/");
-    } catch (e: any) {
-      // 에러 형태가 firebase error일 경우
-      console.log(e.message);
+    console.log("result");
+    if (!result) {
+      setError("소셜 로그인 중 문제가 발생했습니다!");
+    }
+    if (result.state !== "true") {
+      console.log(result.error);
+      setError(result.error);
+    } else {
+      console.log("close window");
+      opener.location.href = import.meta.env.VITE_APP_HOSTING_URL;
+      window.close();
     }
   };
 
-  useEffect(() => {
-    onSocialLogin();
-  }, []);
+  const onFail = () => {
+    window.close();
+  };
 
-  return <h3>{params.toString()}</h3>;
+  console.log("start");
+  onSocialLogin();
+
+  console.log("end");
+  return (
+    <>
+      <h3>{error}</h3>
+      <Button onClick={onFail}>Close</Button>
+    </>
+  );
 }

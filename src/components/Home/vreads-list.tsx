@@ -2,9 +2,8 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 import Vread from "./vread";
-import { IVread } from "../../fbCode/fdb";
 
-import { getAllVreads } from "../springApi/springVreads";
+import { IVread, getAllVreads } from "../springApi/springVreads";
 import PostVreadForm from "./post-vread-from";
 
 const Wrapper = styled.div`

@@ -119,6 +119,8 @@ export const signupSpring = async (
     if (resultData.token && resultData.token !== "") {
       // 새로 받은 토큰 집어넣기
       localStorage.setItem("token", resultData.token);
+      localStorage.setItem("userPhoto", resultData.userPhoto);
+      localStorage.setItem("uid", resultData.uid);
       return {
         state: "true",
         error: "",
@@ -166,6 +168,8 @@ export const loginSpring = async (email: string, passwd: string) => {
     if (resultData.token && resultData.token !== "") {
       // 새로 받은 토큰 집어넣기
       localStorage.setItem("token", resultData.token);
+      localStorage.setItem("userPhoto", resultData.userPhoto);
+      localStorage.setItem("uid", resultData.uid);
       return {
         state: "true",
         error: "",
@@ -174,6 +178,53 @@ export const loginSpring = async (email: string, passwd: string) => {
     return {
       state: "statusError",
       error: "로그인 진행 중 문제가 발생했습니다! : " + resultData.error,
+    };
+  }
+};
+
+export const springSocialLogin = async (params: any) => {
+  try {
+    // 유효성 체크
+
+    // 유저 추가 동작
+    const createUserResult = await fetch(
+      import.meta.env.VITE_APP_SPRING_API_URL +
+        "login/oauth2/code/google?" +
+        params,
+      {
+        credentials: "include",
+      }
+    );
+    const result = await createUserResult.json();
+    if (!result) {
+      console.log("error");
+      return {
+        state: "false",
+        error: "로그인중 문제가 발생했습니다",
+      };
+    }
+    if (result.state == "false") {
+      console.log("error");
+      return {
+        state: "false",
+        error: "로그인중 문제가 발생했습니다 : " + result.error,
+      };
+    } else {
+      console.log("create ok");
+      localStorage.setItem("token", result.token);
+      localStorage.setItem("userPhoto", result.userPhoto);
+      localStorage.setItem("uid", result.uid);
+      return {
+        state: "true",
+        error: "",
+      };
+    }
+  } catch (e: any) {
+    // 에러 형태가 firebase error일 경우
+    console.log(e.message);
+    return {
+      state: "false",
+      error: "로그인중 문제가 발생했습니다 : " + e.message,
     };
   }
 };
@@ -196,6 +247,8 @@ export const logoutSpring = async () => {
   }
   try {
     localStorage.removeItem("token");
+    localStorage.removeItem("userPhoto");
+    localStorage.removeItem("uid");
   } catch (e: any) {
     console.log("logout error");
     console.log(e.message || "error");

@@ -1,9 +1,14 @@
 import { useState } from "react";
 import styled from "styled-components";
 import { Input } from "../../style/Input";
-import { IVread, getVreads } from "../../fbCode/fdb";
 import { Error } from "../../style/etc_style";
 import Vread from "../../components/Home/vread";
+import {
+  IVread,
+  SET_PAGE_LIST_LIMIT_INIT,
+  START_COUNT_INIT,
+  getSearchVreads,
+} from "../../components/springApi/springVreads";
 const Wrapper = styled.div`
   display: flex;
   align-items: center;
@@ -56,9 +61,10 @@ const SearchInputBox = styled.article`
 `;
 
 export default function SearchVreads() {
-  const [searchOption, setSearchOption] = useState(3);
+  const [searchOption, setSearchOption] = useState(1);
   const [searchKeyword, setSearchKeyword] = useState("");
-  const [limitStart, setLimitStart] = useState("");
+  const [startCount, setStartCount] = useState(START_COUNT_INIT);
+  const [pageListLimit, setPageListLimit] = useState(SET_PAGE_LIST_LIMIT_INIT);
   const [isSearchLoading, setIsSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState("");
   const [searchVreads, setSearchVreads] = useState<IVread[]>([]);
@@ -71,30 +77,33 @@ export default function SearchVreads() {
   };
 
   const onSearchHandler = async (isSearchMore: boolean) => {
-    const limit = 30;
-    if (!isSearchMore) setLimitStart("");
+    if (!isSearchMore) setStartCount(START_COUNT_INIT);
+    else setStartCount((state) => state + SET_PAGE_LIST_LIMIT_INIT);
+
+    if (!isSearchMore) setPageListLimit(SET_PAGE_LIST_LIMIT_INIT);
+    else setPageListLimit((state) => state + SET_PAGE_LIST_LIMIT_INIT);
+
     if (isSearchLoading) return;
+
     setIsSearchLoading(true);
+
     if (searchKeyword !== "") {
       setSearchError("");
-      const resultVreads = await getVreads(
+      const result = await getSearchVreads(
+        searchKeyword,
         searchOption,
-        null,
-        limit,
-        limitStart,
-        searchKeyword
+        startCount,
+        pageListLimit
       );
-      if (
-        !resultVreads ||
-        !resultVreads.vreads ||
-        resultVreads.state === false
-      ) {
-        setSearchError(resultVreads.error);
+
+      if (result.state !== "true") {
+        setSearchError(result.error);
       } else {
         // setLimitStart((state) => state + limit);
+        const resultVreads = result.data;
         if (isSearchMore)
-          setSearchVreads((state) => [...state, ...resultVreads.vreads]);
-        else setSearchVreads(resultVreads.vreads);
+          setSearchVreads((state) => [...state, ...resultVreads]);
+        else setSearchVreads(resultVreads);
       }
     }
     setIsSearchLoading(false);
@@ -108,8 +117,8 @@ export default function SearchVreads() {
 
   const onToggleSearchOption = (e: React.ChangeEvent<HTMLButtonElement>) => {
     const { name } = e.target;
-    if (name === "titleDetail") setSearchOption(3);
-    else if (name === "userName") setSearchOption(4);
+    if (name === "title") setSearchOption(1);
+    else if (name === "titleDetail") setSearchOption(2);
   };
   return (
     <Wrapper>
@@ -128,18 +137,18 @@ export default function SearchVreads() {
       </SearchInputBox>
       <SearchInputBox className="toggler">
         <SearchBtn
-          className={"toggleBtn" + (searchOption === 3 ? " activeBtn" : "")}
+          className={"toggleBtn" + (searchOption === 1 ? " activeBtn" : "")}
+          name="title"
+          onClick={onToggleSearchOption}
+        >
+          Title
+        </SearchBtn>
+        <SearchBtn
+          className={"toggleBtn" + (searchOption === 2 ? " activeBtn" : "")}
           name="titleDetail"
           onClick={onToggleSearchOption}
         >
           Title + Detail
-        </SearchBtn>
-        <SearchBtn
-          className={"toggleBtn" + (searchOption === 4 ? " activeBtn" : "")}
-          name="userName"
-          onClick={onToggleSearchOption}
-        >
-          User name
         </SearchBtn>
       </SearchInputBox>
       {searchError !== "" && <Error>{searchError}</Error>}
