@@ -3,16 +3,19 @@ import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
 const WarpperProfileBox = styled.div`
+  margin: 5px;
   padding: 10px;
-  display: flex;
+  /* display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: center; */
+  text-align: center;
   width: 45%;
   border: 2px solid #fcbb79;
   border-radius: 10px;
 `;
 const ProfileImgWrap = styled.label`
   width: 50px;
+  margin: auto;
   overflow: hidden;
   height: 50px;
   border-radius: 50%;
@@ -37,20 +40,28 @@ const Username = styled.span`
 const ProfileImg = styled.img`
   width: 100%;
 `;
+
+const Payload = styled.p`
+  margin: 10px 0px;
+  font-size: 18px;
+`;
+
 export default function ProfileBox(props: any) {
-  const { uid, name, photoURL } = props.userInfo;
+  const { mem_idx, mem_nickname, mem_profileImageUrl, mem_bio } =
+    props.userInfo;
 
   const navi = useNavigate();
   return (
-    <WarpperProfileBox onClick={() => navi("/profile/" + uid)}>
+    <WarpperProfileBox onClick={() => navi("/profile/" + mem_idx)}>
       <ProfileImgWrap>
-        {photoURL ? (
-          <ProfileImg src={photoURL} />
+        {mem_profileImageUrl ? (
+          <ProfileImg src={mem_profileImageUrl} />
         ) : (
           <ProfileImg src="/profile1-svgrepo-com.svg" />
         )}
       </ProfileImgWrap>
-      <Username>{name ? name : "Baker"}</Username>
+      <Username>{mem_nickname ? mem_nickname : "Baker"}</Username>
+      <Payload>{mem_bio ? mem_bio : "Hello Bakers"}</Payload>
     </WarpperProfileBox>
   );
 }

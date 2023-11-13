@@ -8,14 +8,17 @@ import { Button } from "../../style/Button";
 import { Error } from "../../style/etc_style";
 import styled from "styled-components";
 import { useNavigate, useParams } from "react-router-dom";
-import { IUser, springUserInfo } from "../../components/springApi/springUser";
+import {
+  IUser,
+  springProfileUpdate,
+  springUserInfo,
+} from "../../components/springApi/springUser";
 import {
   IVread,
   SET_PAGE_LIST_LIMIT_INIT,
   START_COUNT_INIT,
   getUserVreads,
 } from "../../components/springApi/springVreads";
-import { updateUser } from "../../fbCode/fdb";
 
 const TimelineWrapper = styled.div`
   display: flex;
@@ -108,20 +111,21 @@ export default function Profile() {
       } else {
         setProfileError(result.error);
       }
-      return;
-    }
-
-    const resultInfo = await springUserInfo(anotherUserUid);
-    if (!resultInfo.user || resultInfo.state === false) {
-      navi("/");
     } else {
-      const userInfo = resultInfo.user;
-      setUser({
-        uid: userInfo.uid,
-        displayName: userInfo.name,
-        photoURL: userInfo.photoURL,
-      });
-      setProfileImg(userInfo.photoURL);
+      const resultInfo = await springUserInfo(anotherUserUid);
+      const userTemp: IUser = resultInfo.data;
+
+      if (!userTemp || resultInfo.state !== "true") {
+        alert(resultInfo.error);
+        navi("/");
+      } else {
+        setUser({
+          uid: userTemp.mem_idx.toString(),
+          displayName: userTemp.mem_nickname || "",
+          photoURL: userTemp.mem_profileImageUrl || "",
+        });
+        setProfileImg(userTemp.mem_profileImageUrl || "");
+      }
     }
   };
 
@@ -182,21 +186,18 @@ export default function Profile() {
     if (files && files.length === 1) {
       const file = files[0];
 
-      const updateResult = await updateUser({ profileImg: file });
+      const updateResult = await springProfileUpdate("", "", file);
 
-      if (updateResult.state == false) {
+      if (updateResult.state !== "true") {
         setProfileError(updateResult.error);
       }
+      const resultData = updateResult.data;
 
-      // // 사진 넣기위한 경로지정
-      // const photoref = ref(storage, "profiles/photo/" + user?.uid);
-
-      // // 사진 업로드 및 파일 url 받기
-      // const result = await uploadBytes(photoref, file);
-      // const photoURL = await getDownloadURL(result.ref);
-      // await updateProfile(user, { photoURL: photoURL });
-      if (updateResult.photoURL && updateResult.photoURL !== "")
-        setProfileImg(updateResult.photoURL);
+      if (
+        resultData.mem_profileImageUrl &&
+        resultData.mem_profileImageUrl !== ""
+      )
+        setProfileImg(resultData.mem_profileImageUrl);
     }
     // setIsProLoading(false);
   };
@@ -227,7 +228,7 @@ export default function Profile() {
     setProfileError("");
 
     if (nameInput !== "") {
-      const updateResult = await updateUser({ displayName: nameInput });
+      const updateResult = await springProfileUpdate(nameInput, "", null);
       if (updateResult.state == false) {
         if (updateResult.error !== "") setProfileError(updateResult.error);
       }
@@ -240,7 +241,7 @@ export default function Profile() {
   return (
     <Wrapper>
       <AvatarUpload htmlFor="profileImg">
-        {profileImg ? (
+        {profileImg !== "" ? (
           <AvatarImg src={profileImg} />
         ) : (
           <AvatarImg src="/profile1-svgrepo-com.svg" />
@@ -274,7 +275,7 @@ export default function Profile() {
         {vreads && vreads.length > 0
           ? vreads.map((vt) => (
               <Vread
-                key={vt.id + "_pro"}
+                key={vt.vreads_idx + "_pro"}
                 onUpdateReload={() => {}}
                 onReload={getVreadList}
                 vread={vt}

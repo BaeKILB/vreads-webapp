@@ -3,8 +3,12 @@ import styled from "styled-components";
 import { Input } from "../../style/Input";
 import { Error } from "../../style/etc_style";
 import { useParams } from "react-router-dom";
-import { IGetUser, getUsersInfo } from "../../fbCode/fLogin";
 import ProfileBox from "../../components/search/profileBox";
+import { IUser, getUserSearch } from "../../components/springApi/springUser";
+import {
+  SET_PAGE_LIST_LIMIT_INIT,
+  START_COUNT_INIT,
+} from "../../components/springApi/springVreads";
 const Wrapper = styled.div`
   display: flex;
   align-items: center;
@@ -62,7 +66,10 @@ export default function SearchBakers() {
   // const [limitStart, setLimitStart] = useState("");
   const [isSearchLoading, setIsSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState("");
-  const [searchUsers, setSearchUsers] = useState<IGetUser[]>([]);
+  const [startCount, setStartCount] = useState(START_COUNT_INIT);
+  const [pageListLimit, setPageListLimit] = useState(SET_PAGE_LIST_LIMIT_INIT);
+  const [searchDate, setSerchDate] = useState(new Date().getTime().toString());
+  const [searchUsers, setSearchUsers] = useState<IUser[]>([]);
   const { userName } = useParams();
 
   const onChangeKeywordHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -76,21 +83,48 @@ export default function SearchBakers() {
     isSearchMore: boolean,
     paramKeyword: string | null
   ) => {
-    const limit = 30;
     // if (!isSearchMore) setLimitStart("");
     if (isSearchLoading) return;
+
+    // 검색 시작
     setIsSearchLoading(true);
     setSearchError("");
+
+    // 검색어 적용
     let kw = searchKeyword;
+
+    // 파라미터 검색어 있다면 적용
     if (paramKeyword && paramKeyword !== "") kw = paramKeyword;
-    const resultusers = await getUsersInfo(kw, limit);
-    if (!resultusers || !resultusers.users || resultusers.state === false) {
-      setSearchError(resultusers.error);
+
+    // 날짜 및 리미트설정
+    // 만약 더보기 버튼 누를때에는 가존 날짜 유지
+    if (!isSearchMore) {
+      setSerchDate(new Date().getTime().toString());
+      setStartCount(START_COUNT_INIT);
+      setPageListLimit(SET_PAGE_LIST_LIMIT_INIT);
+    } else {
+      setStartCount((state) => state + SET_PAGE_LIST_LIMIT_INIT);
+      setPageListLimit((state) => state + SET_PAGE_LIST_LIMIT_INIT);
+    }
+
+    // 데이터 받아오기
+    const result = await getUserSearch(
+      kw,
+      searchDate,
+      startCount,
+      pageListLimit
+    );
+    if (result.state != "true") {
+      setSearchError(result.error);
+      return;
+    }
+    const resultusers = result.data;
+    if (!resultusers) {
+      setSearchError("데이터 적용 중 문제가 발생했습니다!");
     } else {
       // setLimitStart((state) => state + limit);
-      if (isSearchMore)
-        setSearchUsers((state) => [...state, ...resultusers.users]);
-      else setSearchUsers(resultusers.users);
+      if (isSearchMore) setSearchUsers((state) => [...state, ...resultusers]);
+      else setSearchUsers(resultusers);
     }
 
     setIsSearchLoading(false);
@@ -133,7 +167,7 @@ export default function SearchBakers() {
         {searchUsers.length <= 0 && <p></p>}
         {searchUsers.length > 0 &&
           searchUsers.map((user) => (
-            <ProfileBox key={user.id + "_search"} userInfo={user} />
+            <ProfileBox key={user.mem_idx + "_search"} userInfo={user} />
           ))}
         {/* {searchUsers.length > 0 && (
           <SearchBtn onClick={() => onSearchHandler(true)}>Load More</SearchBtn>

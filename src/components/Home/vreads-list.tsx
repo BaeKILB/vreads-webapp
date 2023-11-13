@@ -5,6 +5,7 @@ import Vread from "./vread";
 
 import { IVread, getAllVreads } from "../springApi/springVreads";
 import PostVreadForm from "./post-vread-from";
+import { Error } from "../../style/etc_style";
 
 const Wrapper = styled.div`
   display: flex;
@@ -16,6 +17,7 @@ const Wrapper = styled.div`
 export default function VreadsList() {
   const [vreads, setVreads] = useState<IVread[]>([]);
   const [isReloadList, setIsReloadList] = useState(false);
+  const [error, setError] = useState("");
 
   const onReloadToggle = () => {
     setIsReloadList((state) => !state);
@@ -25,8 +27,13 @@ export default function VreadsList() {
     // async 사용하는 내부 메서드 만들기
     // vreads 받아오기
     const fetchVreads = async () => {
+      setError("");
       const result = await getAllVreads();
 
+      if (result.state !== "true") {
+        setError(result.error);
+        return;
+      }
       setVreads(result.data);
     };
 
@@ -41,7 +48,8 @@ export default function VreadsList() {
   return (
     <Wrapper>
       <PostVreadForm onReloadToggle={onReloadToggle} />
-      {vreads && vreads.map((vt) => <Vread key={vt.id} vread={vt} />)}
+      {!error && error !== "" && <Error>{error}</Error>}
+      {vreads && vreads.map((vt) => <Vread key={vt.vreads_idx} vread={vt} />)}
     </Wrapper>
   );
 }

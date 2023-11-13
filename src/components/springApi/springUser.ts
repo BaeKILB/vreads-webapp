@@ -1,5 +1,7 @@
+import { SET_PAGE_LIST_LIMIT_INIT, START_COUNT_INIT } from "./springVreads";
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
-const apiUrl = import.meta.env.VITE_APP_SPRING_API_URL;
+const apiUrl = import.meta.env.VITE_APP_SPRING_API_URL + "api/userInfo";
 
 export interface IUser {
   mem_idx: number;
@@ -25,7 +27,7 @@ export const springUserInfo = async (uidStr: string) => {
   const token = localStorage.getItem("token");
   try {
     // 유저 정보 가져오기
-    const createUserResult = await fetch(apiUrl + "api/userInfo", {
+    const createUserResult = await fetch(apiUrl, {
       method: "POST",
       credentials: "include",
       headers: {
@@ -53,7 +55,10 @@ export const springUserInfo = async (uidStr: string) => {
     }
     if (result.state !== "true") {
       console.log("error : " + result.error);
-      return result;
+      return {
+        state: "false",
+        error: "유저 정보 받는 중 문제가 발생했습니다 : " + result.error,
+      };
     } else {
       console.log("create ok");
       return result;
@@ -63,7 +68,7 @@ export const springUserInfo = async (uidStr: string) => {
     console.log(e.message);
     return {
       state: "false",
-      error: "로그인중 문제가 발생했습니다 : " + e.message,
+      error: "유저 정보 받는 중 문제가 발생했습니다 : " + e.message,
     };
   }
 };
@@ -82,9 +87,15 @@ export const springProfileUpdate = async (
       error:
         "Profile update 중 문제가 발생하였습니다! 새로고침 또는 다시 로그인 해주세요",
     };
-
+  console.log(mem_nickname);
+  console.log(mem_bio);
   // 유효성 체크
-  if (!mem_nickname || !mem_bio)
+  if (
+    mem_nickname === null ||
+    mem_nickname === undefined ||
+    mem_bio === null ||
+    mem_bio === undefined
+  )
     return {
       state: "strCheckError",
       error:
@@ -97,7 +108,7 @@ export const springProfileUpdate = async (
   formData.append("mem_bio", mem_bio);
   formData.append("file", file);
 
-  const result = await fetch(apiUrl + "userInfo/profileUpdate", {
+  const result = await fetch(apiUrl + "/profileUpdate", {
     credentials: "include",
     method: "POST",
     headers: {
@@ -109,6 +120,72 @@ export const springProfileUpdate = async (
   });
 
   if (result.status != 200) {
+    console.log("통신중 문제가 발생했습니다 : " + result.status);
+    return {
+      state: "fetchError",
+      error: "통신중 문제가 발생했습니다 : " + result.status,
+    };
+  }
+
+  const resultData = await result.json();
+  if (resultData.state !== "true") {
+    return {
+      state: "stateError",
+      error: "유저 업데이트 중 이상이 발생했습니다! : " + resultData.error,
+    };
+  }
+  // 로컬 프로필 이미지 업데이트
+  localStorage.setItem("userPhoto", resultData.data.mem_profileImageUrl);
+  return resultData;
+};
+
+// 유저 검색 사용
+
+export const getUserSearch = async (
+  keyword: string,
+  searchDate: string, // 날짜는 밀리세컨드로
+  startCount: number,
+  setPageListLimit: number
+) => {
+  const token = localStorage.getItem("token");
+
+  if (!token || token === "") {
+    return {
+      state: "tokenError",
+      error: "토큰이 없거나 잘못된 값 입니다!",
+    };
+  }
+
+  // 유효성 체크
+  if (searchDate === "") {
+    return {
+      state: "inputError",
+      error: "속성 값이 잘못되었습니다!",
+    };
+  }
+
+  // 만약 리미트값 잘못 되어있으면 초기값으로 하기
+  if (startCount < 0 || setPageListLimit < 1) {
+    startCount = START_COUNT_INIT;
+    setPageListLimit = SET_PAGE_LIST_LIMIT_INIT;
+  }
+
+  const result = await fetch(apiUrl + "/getUserList", {
+    credentials: "include",
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    },
+    body: JSON.stringify({
+      keyword,
+      searchDate,
+      startCount,
+      setPageListLimit,
+    }),
+  });
+
+  if (result.status != 200) {
     console.log("통신중 문제가 발생했습니다" + result.status);
     return {
       state: "fetchError",
@@ -117,9 +194,20 @@ export const springProfileUpdate = async (
   }
 
   const resultData = await result.json();
-  if (resultData.state !== "true") {
-    // 로컬 프로필 이미지 업데이트
-    localStorage.setItem("userPhoto", resultData.data.mem_profileImageUrl);
+  if (!resultData) {
+    return {
+      state: "dataError",
+      error: "통신중 문제가 발생했습니다 데이터를 받지 못했습니다!",
+    };
   }
+  if (resultData.state !== "true") {
+    return {
+      state: "dataError",
+      error:
+        "통신중 문제가 발생했습니다 데이터를 받지 못했습니다! : " +
+        resultData.error,
+    };
+  }
+
   return resultData;
 };

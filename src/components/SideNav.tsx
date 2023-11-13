@@ -47,7 +47,7 @@ const AvatarImg = styled.img`
 export default function SideNav() {
   const navi = useNavigate();
   const userPhoto = localStorage.getItem("userPhoto");
-  const profileImg = userPhoto ? userPhoto : "";
+  const profileImg = userPhoto && userPhoto !== "undefined" ? userPhoto : "";
 
   const onLogoutHandler = async () => {
     const answer = confirm("정말 로그아웃 하시겠습니까?");
@@ -73,7 +73,7 @@ export default function SideNav() {
 
       <Link to="/profile">
         <MenuItem>
-          {profileImg ? (
+          {profileImg !== "" ? (
             <AvatarImg src={profileImg} />
           ) : (
             <AvatarImg src="/profile1-svgrepo-com.svg" />

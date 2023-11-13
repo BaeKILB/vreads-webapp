@@ -153,7 +153,7 @@ export default function SearchSubtag() {
         )}
         {searchVreads.length > 0 &&
           searchVreads.map((vread) => (
-            <Vread key={vread.id + "_search"} vread={vread} />
+            <Vread key={vread.vreads_idx + "_search"} vread={vread} />
           ))}
         {/* {searchVreads.length > 0 && (
           <SearchBtn onClick={() => onSearchHandler(true)}>Load More</SearchBtn>

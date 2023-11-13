@@ -1,11 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import styled from "styled-components";
-import { deleteVread } from "../../fbCode/fdb";
 import { useState } from "react";
 import { Error } from "../../style/auth-components";
-import { auth } from "../../fbCode/fbase";
 import PostVreadForm from "./post-vread-from";
 import { useNavigate } from "react-router-dom";
+import { IVread, deleteVread } from "../springApi/springVreads";
 const Wrapper = styled.div`
   display: grid;
   grid-template-columns: 4fr 1fr;
@@ -142,9 +141,14 @@ const ModifySpan = styled.span`
 `;
 
 export default function Vread(props: any) {
+  const { isDetail } = props;
+
   const [error, setError] = useState("");
   const [clickUpdateBtn, setClickUpdateBtn] = useState(false);
   const [isDetailReadMore, setIsDetailReadMore] = useState(false);
+  const vreadData: IVread = props.vread;
+
+  // vread 값 적용
   const {
     vd_vtTitle,
     vd_vtDetail,
@@ -155,24 +159,29 @@ export default function Vread(props: any) {
     mem_profileImageUrl,
     vd_createDate,
     vd_modifyDate,
-    // vreads_idx,
-  } = props.vread;
+    vreads_idx,
+  } = vreadData;
 
   const navi = useNavigate();
+
+  //uid
+  const uid = localStorage.getItem("uid");
+
   // 핸들러
 
-  const user = auth.currentUser;
-
   const onClickUpdateForm = () => setClickUpdateBtn((state) => !state);
+
+  // 업데이트
+  const onUpdateReload = async () => {};
 
   const onDeleteHandler = async () => {
     setError("");
     const isComfirm = confirm("Are you sure you want to delete this Vread?");
-    if (!isComfirm || user?.uid !== mem_idx) {
+    if (!isComfirm || uid !== mem_idx) {
       return;
     }
 
-    const result = await deleteVread("id", user?.uid, vd_media_1);
+    const result = await deleteVread(vreads_idx);
     if (!result.state) {
       setError(result.error);
     }
@@ -183,6 +192,14 @@ export default function Vread(props: any) {
   // 더보기 버튼
   const onClickReadMoreHandler = () => {
     setIsDetailReadMore((state) => !state);
+  };
+
+  // detail 로 넘어가기
+  const onClickDetail = () => {
+    // isDetail 이 true 일때는 detail로 넘어가지 않게 하기
+    if (!isDetail) {
+      navi("/vreadDetail/" + vreads_idx);
+    }
   };
 
   // 날짜 관련
@@ -210,6 +227,11 @@ export default function Vread(props: any) {
 
     //버튼 띄우기
     detailReadMore = true;
+
+    // 만약 isDetail 이 true 로 왔다면 접힌 항목 펼쳐 보이게 하기
+    if (isDetail && isDetail === "true") {
+      setIsDetailReadMore(true);
+    }
   }
   return (
     <Wrapper>
@@ -225,13 +247,13 @@ export default function Vread(props: any) {
           </ProfileImgWrap>
           <Username>{mem_nickname}</Username>
         </PlofileWrap>
-        <Payload className="vt_title">
+        <Payload onClick={onClickDetail} className="vt_title">
           {vd_vtTitle}{" "}
           {vd_modifyDateCheck == true && <ModifySpan>(Edited)</ModifySpan>}
         </Payload>
         {vd_vtDetail !== "" && (
           <>
-            <Payload>
+            <Payload onClick={onClickDetail}>
               {detailReadMore
                 ? isDetailReadMore
                   ? vd_vtDetail
@@ -251,7 +273,7 @@ export default function Vread(props: any) {
           </SubTagPayload>
         )}
         <DatePayload>{vdString}</DatePayload>
-        {user?.uid === mem_idx && (
+        {uid === mem_idx && isDetail && (
           <>
             <DeleteButton onClick={onDeleteHandler}>delete</DeleteButton>
             <UpdateButton onClick={onClickUpdateForm}>Update</UpdateButton>
@@ -263,7 +285,7 @@ export default function Vread(props: any) {
             vread={props.vread}
             isModify={true}
             closeForm={onClickUpdateForm}
-            onUpdateReload={props.onUpdateReload}
+            onUpdateReload={onUpdateReload}
           />
         )}
       </Column>
