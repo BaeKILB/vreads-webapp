@@ -14,6 +14,12 @@ export interface IVread {
   vreads_idx: string;
 }
 
+// subtaglist 불러올때 쓰는 틀
+export interface SubTagInit {
+  vd_subtag: string;
+  vd_subtag_count: string;
+}
+
 const apiUrl = import.meta.env.VITE_APP_SPRING_API_URL + "api/vread";
 
 export const VT_TITLE_MIN_LENGTH = 1;
@@ -486,4 +492,81 @@ export const loadImg = (doc: HTMLImageElement, url: string) => {
 
       doc.src = objectURL;
     });
+};
+
+//search type 과 keyword 에 맞춰서 Subtag 이름과 해당 subtag 의 갯수 불러오기
+/*
+	 * 유의사항
+	 * 
+	 * 0 번의 경우 searchDate 보다 최근의 정보를 불러옴
+	 * 
+	 * 0 번 사용시 userIdx 널 스트링으로
+	 * 
+	 * 	<!-- serchType -->
+	<!-- 0 = 전체 subtag 인기순 정렬 검색-->
+	<!-- 1 = userIdx 로 특정 유저의 vread subtag 검색-->
+	 * */
+export const getSubtagList = async (
+  uid: string,
+  searchType: number,
+  startCount: number,
+  setPageListLimit: number
+) => {
+  const token = localStorage.getItem("token");
+
+  if (!token || token === "") {
+    return {
+      state: "tokenError",
+      error: "토큰이 없거나 잘못된 값 입니다!",
+    };
+  }
+
+  // 유효성 체크
+  if (searchType < 0 || startCount < 0 || setPageListLimit < 0) {
+    return {
+      state: "inputError",
+      error: "속성 값이 잘못되었습니다!",
+    };
+  }
+
+  const result = await fetch(apiUrl + "/subtagList", {
+    credentials: "include",
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    },
+    body: JSON.stringify({
+      uid,
+      searchType,
+      startCount,
+      setPageListLimit,
+    }),
+  });
+
+  if (result.status != 200) {
+    console.log("통신중 문제가 발생했습니다" + result.status);
+    return {
+      state: "fetchError",
+      error: "통신중 문제가 발생했습니다" + result.status,
+    };
+  }
+
+  const resultData = await result.json();
+  if (!resultData) {
+    return {
+      state: "dataError",
+      error: "통신중 문제가 발생했습니다 데이터를 받지 못했습니다!",
+    };
+  }
+  if (resultData.state !== "true") {
+    console.log(
+      "dataError : " +
+        resultData.state +
+        " 통신중 문제가 발생했습니다 데이터를 받지 못했습니다! : " +
+        resultData.error
+    );
+  }
+
+  return resultData;
 };

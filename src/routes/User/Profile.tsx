@@ -17,6 +17,8 @@ import {
   IVread,
   SET_PAGE_LIST_LIMIT_INIT,
   START_COUNT_INIT,
+  SubTagInit,
+  getSubtagList,
   getUserVreads,
 } from "../../components/springApi/springVreads";
 
@@ -61,13 +63,6 @@ const Name = styled.span`
   cursor: pointer;
 `;
 
-const VreadsTitle = styled.p`
-  font-size: 22px;
-  color: #fcbb79;
-  font-weight: bold;
-  margin: 5px 0;
-`;
-
 const NameInput = styled.input`
   padding: 10px;
   border-radius: 10px;
@@ -86,6 +81,72 @@ const Payload = styled.p`
   border-radius: 10px;
 `;
 
+const SearchInputBox = styled.article`
+  display: flex;
+  width: 100%;
+  &.toggler {
+    justify-content: center;
+  }
+`;
+
+const SearchBtn = styled.button`
+  display: inline-block;
+  border: none;
+  border-radius: 10px;
+  width: 100px;
+  font-size: large;
+  margin-left: 5px;
+  padding: 10px 0px;
+  background-color: #fcbb79;
+  color: white;
+  transition: background-color 0.3s, color 0.3s;
+  cursor: pointer;
+  &.toggleBtn {
+    background-color: black;
+    border: 2px solid #fcbb79;
+    width: 150px;
+  }
+  &.activeBtn {
+    background-color: white;
+    color: black;
+  }
+  &:hover {
+    background-color: white;
+    color: black;
+  }
+`;
+
+const SubtagListWrapper = styled.div`
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  justify-content: center;
+  align-items: center;
+  flex-direction: row;
+  flex-wrap: wrap;
+  width: 100%;
+  border: 2px solid #fcbb79;
+  border-radius: 10px;
+`;
+
+const SubTagPayload = styled.p`
+  margin: 10px 0px;
+  width: 40%;
+  font-size: 15px;
+  font-style: italic;
+  font-weight: bold;
+  color: #fcbb79;
+  display: inline-block;
+  padding: 5px;
+  border: 2px solid #fffbf81d;
+  border-radius: 10px;
+  transition: border 0.2s;
+  &:hover {
+    cursor: pointer;
+    border: 2px solid #fcbb79;
+  }
+`;
+
 export default function Profile() {
   const [user, setUser] = useState({
     uid: "",
@@ -98,14 +159,23 @@ export default function Profile() {
   const [nameInput, setNameInput] = useState(user?.displayName);
   const [bioInput, setBioInput] = useState(user?.displayName);
   const [vreads, setVreads] = useState<IVread[]>([]);
+  const [subTagList, setSubTagList] = useState<SubTagInit[]>([]);
   const [profileError, setProfileError] = useState("");
 
+  const [searchType, setSearchType] = useState(0);
+  const [keyword, setKeyword] = useState("");
   const [startCount, setStartCount] = useState(START_COUNT_INIT);
   const [pageListLimit, setPageListLimit] = useState(SET_PAGE_LIST_LIMIT_INIT);
+  const [tagStartCount, setTagStartCount] = useState(START_COUNT_INIT);
+  const [tagPageListLimit, setTagPageListLimit] = useState(
+    SET_PAGE_LIST_LIMIT_INIT
+  );
 
   const [isClickName, setIsClickName] = useState(false);
   const [isClickBio, setIsClickBio] = useState(false);
   const [isProLoading, setIsProLoading] = useState(false);
+
+  const [reloadToggle, setReloadToggle] = useState(false);
 
   const navi = useNavigate();
   // 다른 유저 페이지로 접근시
@@ -185,18 +255,12 @@ export default function Profile() {
       pageLimit += SET_PAGE_LIST_LIMIT_INIT;
     }
 
-    if (!isSearchMore) setStartCount(START_COUNT_INIT);
-    else setStartCount((state) => state + SET_PAGE_LIST_LIMIT_INIT);
-
-    if (!isSearchMore) setPageListLimit(SET_PAGE_LIST_LIMIT_INIT);
-    else setPageListLimit((state) => state + SET_PAGE_LIST_LIMIT_INIT);
-
     // uid로 검색은 0 .. 그리고
     const vreadsResult = await getUserVreads(
       uid,
       "0",
-      "",
-      0,
+      keyword,
+      searchType,
       startLimit,
       pageLimit
     );
@@ -218,11 +282,65 @@ export default function Profile() {
     getVreadList(true);
   };
 
+  // 많이 개시된 subtag 항목명 불러오기
+  const onSubTagListHandler = async (isSearchMore: boolean) => {
+    let uid = localStorage.getItem("uid");
+
+    if (anotherUserUid) uid = anotherUserUid;
+
+    if (!uid) {
+      setProfileError("유저 번호를 받을수 없습니다 !");
+      return;
+    }
+    // 로딩중이면 중복동작 안하도록
+    if (isProLoading) return;
+
+    setIsProLoading(true);
+
+    // 동작
+
+    // 만약 load more 을 눌렀을때 카운트 셋팅 하기
+    // 주의! 수정 해준뒤 변수에 따로 담아 똑같은 값으로 추가 해 준 뒤 사용
+    // useState 는 변경 직후가 아닌 스냅샷 값을 이용하기 때문
+
+    let startLimit = tagStartCount;
+    let pageLimit = tagPageListLimit;
+
+    if (!isSearchMore) {
+      setTagStartCount(START_COUNT_INIT);
+      startLimit = START_COUNT_INIT;
+    } else {
+      setTagStartCount((state) => state + SET_PAGE_LIST_LIMIT_INIT);
+      startLimit += SET_PAGE_LIST_LIMIT_INIT;
+    }
+
+    if (!isSearchMore) {
+      setTagPageListLimit(SET_PAGE_LIST_LIMIT_INIT);
+      pageLimit = SET_PAGE_LIST_LIMIT_INIT;
+    } else {
+      setTagPageListLimit((state) => state + SET_PAGE_LIST_LIMIT_INIT);
+      pageLimit += SET_PAGE_LIST_LIMIT_INIT;
+    }
+
+    // getSubtagList 에서 3번은 서브태그
+    const result = await getSubtagList(uid, 1, startLimit, pageLimit);
+    if (result.state !== "true") {
+      setProfileError(result.error);
+    } else {
+      const resultSubtags = result.data;
+      if (isSearchMore) setSubTagList((state) => [...state, ...resultSubtags]);
+      else setSubTagList(resultSubtags);
+    }
+
+    setIsProLoading(false);
+  };
+
   // Vread list 받기
   useEffect(() => {
     getAnotherUserInfo();
     getVreadList(false);
-  }, []);
+    onSubTagListHandler(false);
+  }, [reloadToggle]);
 
   //프로필 이미지 수정
 
@@ -248,8 +366,11 @@ export default function Profile() {
       if (
         resultData.mem_profileImageUrl &&
         resultData.mem_profileImageUrl !== ""
-      )
+      ) {
         setProfileImg(resultData.mem_profileImageUrl);
+        // 프로필 다시 로드
+        setReloadToggle((state) => !state);
+      }
     }
     // setIsProLoading(false);
   };
@@ -281,8 +402,11 @@ export default function Profile() {
 
     if (nameInput !== "") {
       const updateResult = await springProfileUpdate(nameInput, "", null);
-      if (updateResult.state == false) {
+      if (updateResult.state !== "true") {
         if (updateResult.error !== "") setProfileError(updateResult.error);
+      } else {
+        // 프로필 다시 로드
+        setReloadToggle((state) => !state);
       }
     }
     onClickNameHandler();
@@ -317,13 +441,31 @@ export default function Profile() {
 
     if (bioInput !== "") {
       const updateResult = await springProfileUpdate("", bioInput, null);
-      if (updateResult.state == false) {
+      if (updateResult.state !== "true") {
         if (updateResult.error !== "") setProfileError(updateResult.error);
+      } else {
+        // 프로필 다시 로드
+        setReloadToggle((state) => !state);
       }
     }
     onClickBioHandler();
     setBioInput("");
     setIsProLoading(false);
+  };
+
+  const onClickPopularSubtag = (subtagStr: string) => {
+    setKeyword(subtagStr);
+    setReloadToggle((state) => !state);
+  };
+
+  const onToggleSearchType = (e: React.ChangeEvent<HTMLButtonElement>) => {
+    const { name } = e.target;
+    if (name === "User_Vreads") {
+      setSearchType(0);
+      setKeyword("");
+      // 프로필 다시 로드
+      setReloadToggle((state) => !state);
+    } else if (name === "User_Subtags") setSearchType(3);
   };
 
   return (
@@ -376,7 +518,42 @@ export default function Profile() {
         </Payload>
       )}
       {profileError !== "" && <Error key="pro_err">{profileError}</Error>}
-      <VreadsTitle>{user?.displayName} 's Vread list</VreadsTitle>
+      <SearchInputBox className="toggler">
+        <SearchBtn
+          className={"toggleBtn" + (searchType === 0 ? " activeBtn" : "")}
+          name="User_Vreads"
+          onClick={onToggleSearchType}
+        >
+          User Vreads
+        </SearchBtn>
+        <SearchBtn
+          className={"toggleBtn" + (searchType === 3 ? " activeBtn" : "")}
+          name="User_Subtags"
+          onClick={onToggleSearchType}
+        >
+          User Subtags
+        </SearchBtn>
+      </SearchInputBox>
+      {searchType === 3 && (
+        <>
+          <h3>User Subtag List</h3>
+          <SubtagListWrapper>
+            {subTagList.map((subtag) => (
+              <SubTagPayload
+                key={subtag.vd_subtag + "_subtag"}
+                onClick={() => {
+                  onClickPopularSubtag(subtag.vd_subtag);
+                }}
+              >
+                {subtag.vd_subtag} <br />/ count : {subtag.vd_subtag_count}
+              </SubTagPayload>
+            ))}
+          </SubtagListWrapper>
+          <Button onClick={() => onSubTagListHandler(true)}>
+            Load More Tags
+          </Button>
+        </>
+      )}
       <TimelineWrapper>
         {vreads && vreads.length > 0
           ? vreads.map((vt) => (

@@ -12,6 +12,7 @@ const WarpperProfileBox = styled.div`
   width: 45%;
   border: 2px solid #fcbb79;
   border-radius: 10px;
+  cursor: pointer;
 `;
 const ProfileImgWrap = styled.label`
   width: 50px;

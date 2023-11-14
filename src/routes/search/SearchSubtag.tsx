@@ -3,12 +3,14 @@ import styled from "styled-components";
 import { Input } from "../../style/Input";
 import { Error } from "../../style/etc_style";
 import Vread from "../../components/Home/vread";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   IVread,
   SET_PAGE_LIST_LIMIT_INIT,
   START_COUNT_INIT,
+  SubTagInit,
   getSearchVreads,
+  getSubtagList,
 } from "../../components/springApi/springVreads";
 import { Button } from "../../style/Button";
 const Wrapper = styled.div`
@@ -25,6 +27,36 @@ const TimelineWrapper = styled.div`
   gap: 10px;
   flex-direction: column;
   width: 100%;
+`;
+const SubtagListWrapper = styled.div`
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  justify-content: center;
+  align-items: center;
+  flex-direction: row;
+  flex-wrap: wrap;
+  width: 100%;
+  border: 2px solid #fcbb79;
+  border-radius: 10px;
+`;
+
+const SubTagPayload = styled.p`
+  margin: 10px 0px;
+  width: 40%;
+  font-size: 15px;
+  font-style: italic;
+  font-weight: bold;
+  color: #fcbb79;
+  display: inline-block;
+  padding: 5px;
+  border: 2px solid #fffbf81d;
+  border-radius: 10px;
+  transition: border 0.2s;
+  &:hover {
+    cursor: pointer;
+    border: 2px solid #fcbb79;
+  }
 `;
 
 const SearchBtn = styled.button`
@@ -68,10 +100,14 @@ export default function SearchSubtag() {
   const [pageListLimit, setPageListLimit] = useState(SET_PAGE_LIST_LIMIT_INIT);
   const [isSearchLoading, setIsSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState("");
+  const [reloadToggle, setReloadToggle] = useState(false);
   const [searchVreads, setSearchVreads] = useState<IVread[]>([]);
+  const [subTagList, setSubTagList] = useState<SubTagInit[]>([]);
 
   // url 파라미터 들고오기
   let { subTag } = useParams();
+
+  const navi = useNavigate();
 
   const onChangeKeywordHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     const {
@@ -156,11 +192,38 @@ export default function SearchSubtag() {
     }
   };
 
+  // 많이 개시된 subtag 항목명 불러오기
+  const onSubTagListHandler = async () => {
+    // 로딩중이면 중복동작 안하도록
+    if (isSearchLoading) return;
+
+    setIsSearchLoading(true);
+
+    // 동작
+
+    // getSubtagList 에서 3번은 서브태그
+    const result = await getSubtagList("", 3, 0, 6);
+    if (result.state !== "true") {
+      setSearchError(result.error);
+    } else {
+      const resultSubtags = result.data;
+      setSubTagList(resultSubtags);
+    }
+
+    setIsSearchLoading(false);
+  };
+
+  const onClickPopularSubtag = (subtagStr: string) => {
+    navi("/subtag/" + subtagStr);
+    setReloadToggle((state) => !state);
+  };
+
   useEffect(() => {
     if (subTag && subTag !== "") {
       onSearchHandler(false, subTag);
     }
-  }, []);
+    onSubTagListHandler();
+  }, [reloadToggle]);
 
   return (
     <Wrapper>
@@ -180,6 +243,25 @@ export default function SearchSubtag() {
         </SearchBtn>
       </SearchInputBox>
 
+      {subTagList && subTagList.length > 0 ? (
+        <>
+          <h3>Popular Subtag List</h3>
+          <SubtagListWrapper>
+            {subTagList.map((subtag) => (
+              <SubTagPayload
+                key={subtag.vd_subtag + "_subtag"}
+                onClick={() => {
+                  onClickPopularSubtag(subtag.vd_subtag);
+                }}
+              >
+                {subtag.vd_subtag} <br />/ count : {subtag.vd_subtag_count}
+              </SubTagPayload>
+            ))}
+          </SubtagListWrapper>
+        </>
+      ) : (
+        ""
+      )}
       {searchError !== "" && <Error>{searchError}</Error>}
       <TimelineWrapper>
         {searchVreads.length <= 0 && (
