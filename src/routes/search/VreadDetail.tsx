@@ -7,6 +7,7 @@ import {
   getVreadDetail,
 } from "../../components/springApi/springVreads";
 import { useParams } from "react-router-dom";
+import { Title } from "../../style/auth-components";
 const Wrapper = styled.div`
   display: flex;
   align-items: center;
@@ -14,6 +15,10 @@ const Wrapper = styled.div`
   gap: 20px;
   margin-top: 10px;
   width: 100%;
+
+  & > div {
+    width: 100%;
+  }
 `;
 
 // const TimelineWrapper = styled.div`
@@ -31,7 +36,7 @@ export default function VreadDetail() {
   const [error, setError] = useState("");
   const [isOnUpdate, setIsOnUpdate] = useState(false);
   const [vread, setVread] = useState<IVread>();
-  const { isDetail, paramVreadIdx } = useParams();
+  const { paramVreadIdx } = useParams();
 
   const onToggleUpdate = () => {
     setIsOnUpdate((state) => !state);
@@ -53,13 +58,14 @@ export default function VreadDetail() {
 
   return (
     <Wrapper>
+      <Title>Vread Detail</Title>
       {error !== "" && <Error>{error}</Error>}
 
       {vread && (
         <Vread
           key={vread.vreads_idx + "_detail"}
           vread={vread}
-          isDetail={isDetail}
+          isDetail={true}
           onToggleUpdate={onToggleUpdate}
         />
       )}

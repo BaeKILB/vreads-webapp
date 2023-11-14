@@ -78,11 +78,25 @@ const NameInput = styled.input`
   font-size: 16px;
 `;
 
+const Payload = styled.p`
+  margin: 10px 0px;
+  padding: 5px;
+  font-size: 18px;
+  border: 1px solid #fcbb79;
+  border-radius: 10px;
+`;
+
 export default function Profile() {
-  const [user, setUser] = useState({ uid: "", displayName: "", photoURL: "" });
+  const [user, setUser] = useState({
+    uid: "",
+    bio: "",
+    displayName: "",
+    photoURL: "",
+  });
 
   const [profileImg, setProfileImg] = useState(user?.photoURL);
   const [nameInput, setNameInput] = useState(user?.displayName);
+  const [bioInput, setBioInput] = useState(user?.displayName);
   const [vreads, setVreads] = useState<IVread[]>([]);
   const [profileError, setProfileError] = useState("");
 
@@ -90,6 +104,7 @@ export default function Profile() {
   const [pageListLimit, setPageListLimit] = useState(SET_PAGE_LIST_LIMIT_INIT);
 
   const [isClickName, setIsClickName] = useState(false);
+  const [isClickBio, setIsClickBio] = useState(false);
   const [isProLoading, setIsProLoading] = useState(false);
 
   const navi = useNavigate();
@@ -105,8 +120,11 @@ export default function Profile() {
         setUser({
           uid: userTemp.mem_idx.toString(),
           displayName: userTemp.mem_nickname || "",
+          bio: userTemp.mem_bio || "",
           photoURL: userTemp.mem_profileImageUrl || "",
         });
+        setNameInput(userTemp.mem_nickname);
+        setBioInput(userTemp.mem_bio);
         setProfileImg(userTemp.mem_profileImageUrl || "");
       } else {
         setProfileError(result.error);
@@ -122,8 +140,11 @@ export default function Profile() {
         setUser({
           uid: userTemp.mem_idx.toString(),
           displayName: userTemp.mem_nickname || "",
+          bio: userTemp.mem_bio || "",
           photoURL: userTemp.mem_profileImageUrl || "",
         });
+        setNameInput(userTemp.mem_nickname);
+        setBioInput(userTemp.mem_bio);
         setProfileImg(userTemp.mem_profileImageUrl || "");
       }
     }
@@ -141,6 +162,29 @@ export default function Profile() {
       return;
     }
 
+    // 만약 load more 을 눌렀을때 카운트 셋팅 하기
+    // 주의! 수정 해준뒤 변수에 따로 담아 똑같은 값으로 추가 해 준 뒤 사용
+    // useState 는 변경 직후가 아닌 스냅샷 값을 이용하기 때문
+
+    let startLimit = startCount;
+    let pageLimit = pageListLimit;
+
+    if (!isSearchMore) {
+      setStartCount(START_COUNT_INIT);
+      startLimit = START_COUNT_INIT;
+    } else {
+      setStartCount((state) => state + SET_PAGE_LIST_LIMIT_INIT);
+      startLimit += SET_PAGE_LIST_LIMIT_INIT;
+    }
+
+    if (!isSearchMore) {
+      setPageListLimit(SET_PAGE_LIST_LIMIT_INIT);
+      pageLimit = SET_PAGE_LIST_LIMIT_INIT;
+    } else {
+      setPageListLimit((state) => state + SET_PAGE_LIST_LIMIT_INIT);
+      pageLimit += SET_PAGE_LIST_LIMIT_INIT;
+    }
+
     if (!isSearchMore) setStartCount(START_COUNT_INIT);
     else setStartCount((state) => state + SET_PAGE_LIST_LIMIT_INIT);
 
@@ -153,8 +197,8 @@ export default function Profile() {
       "0",
       "",
       0,
-      startCount,
-      pageListLimit
+      startLimit,
+      pageLimit
     );
 
     if (vreadsResult.state !== "true") {
@@ -162,8 +206,16 @@ export default function Profile() {
       return;
     }
     if (vreadsResult.data) {
-      setVreads(vreadsResult.data);
+      // 만약 LoadMore 을 클릭했다면 ...
+      if (isSearchMore === true)
+        setVreads((state) => [...state, ...vreadsResult.data]);
+      else setVreads(vreadsResult.data);
     }
+  };
+
+  // 더보기 구현
+  const onLoadMore = () => {
+    getVreadList(true);
   };
 
   // Vread list 받기
@@ -238,6 +290,42 @@ export default function Profile() {
     setIsProLoading(false);
   };
 
+  // 소개(bio) 눌렀을때 수정칸 띄우기
+  const onClickBioHandler = () => {
+    // 만약 다른 userUid로 들어온 페이지면 ...
+    if (anotherUserUid) return;
+    setIsClickBio((state) => !state);
+  };
+
+  //소개(bio) 입력 동작
+  const onBioChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const {
+      target: { value },
+    } = e;
+    setBioInput(value);
+  };
+
+  const onBioUpdateHandler = async (e: React.ChangeEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    // 만약 다른 userUid로 들어온 페이지면 ...
+    if (anotherUserUid) return;
+
+    if (isProLoading) return;
+
+    setIsProLoading(true);
+    setProfileError("");
+
+    if (bioInput !== "") {
+      const updateResult = await springProfileUpdate("", bioInput, null);
+      if (updateResult.state == false) {
+        if (updateResult.error !== "") setProfileError(updateResult.error);
+      }
+    }
+    onClickBioHandler();
+    setBioInput("");
+    setIsProLoading(false);
+  };
+
   return (
     <Wrapper>
       <AvatarUpload htmlFor="profileImg">
@@ -265,9 +353,27 @@ export default function Profile() {
             required
           />
           <Button onClick={onNameUpdateHandler}>Update</Button>
+          <Button onClick={onClickNameHandler}>Cancel</Button>
         </>
       ) : (
         <Name onClick={onClickNameHandler}>{user?.displayName}</Name>
+      )}
+      {isClickBio ? (
+        <>
+          <NameInput
+            key="pro_bioin"
+            name="bio"
+            value={bioInput}
+            onChange={onBioChangeHandler}
+            required
+          />
+          <Button onClick={onBioUpdateHandler}>Update</Button>
+          <Button onClick={onClickBioHandler}>Cancel</Button>
+        </>
+      ) : (
+        <Payload onClick={onClickBioHandler}>
+          {bioInput !== "" ? bioInput : "Hello Bakers"}
+        </Payload>
       )}
       {profileError !== "" && <Error key="pro_err">{profileError}</Error>}
       <VreadsTitle>{user?.displayName} 's Vread list</VreadsTitle>
@@ -276,12 +382,17 @@ export default function Profile() {
           ? vreads.map((vt) => (
               <Vread
                 key={vt.vreads_idx + "_pro"}
-                onUpdateReload={() => {}}
                 onReload={getVreadList}
                 vread={vt}
               />
             ))
           : "There are currently no posted Vread."}
+
+        {vreads && vreads.length > 0 ? (
+          <Button onClick={onLoadMore}>Load more</Button>
+        ) : (
+          ""
+        )}
       </TimelineWrapper>
     </Wrapper>
   );

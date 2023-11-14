@@ -22,32 +22,38 @@ export const checkToken = async () => {
     };
   }
   const result = await fetch(apiUrl + "api/auth/checkToken", {
+    credentials: "include",
     method: "GET",
     headers: {
       Authorization: "Bearer " + token,
     },
   });
-  console.log(result);
+
   if (result.status != 200) {
     if (result.status == 503 || result.status == 403) {
+      console.log("결과에 이상이 있습니다! : " + result.status);
       return {
         state: "false",
         error: "인증에 실패하였습니다! 다시 로그인 해 주세요!",
       };
     }
+
+    console.log("결과에 이상이 있습니다! : " + result.status);
     return {
       state: "fetchError",
       error: "결과를 받아오지 못했습니다!",
     };
   }
   const resultData = await result.json();
-  console.log(resultData);
+
   if (resultData.state == "false") {
+    console.log("결과에 이상이 있습니다! : " + resultData.error);
     return {
       state: "statusError",
       error: "결과에 이상이 있습니다! : " + resultData.error,
     };
   } else {
+    console.log("OK " + result.status);
     if (resultData.newToken && resultData.newToken !== "") {
       // 새로 받은 토큰 집어넣기
       localStorage.setItem("token", resultData.newToken);

@@ -167,26 +167,30 @@ export default function Vread(props: any) {
   //uid
   const uid = localStorage.getItem("uid");
 
+  // detail 페이지 일때 업데이트, 삭제 버튼 만들기
+  let isOnModifyBtn = false;
+
+  if (uid == mem_idx && isDetail) {
+    isOnModifyBtn = true;
+  }
+
   // 핸들러
 
   const onClickUpdateForm = () => setClickUpdateBtn((state) => !state);
 
-  // 업데이트
-  const onUpdateReload = async () => {};
-
   const onDeleteHandler = async () => {
     setError("");
     const isComfirm = confirm("Are you sure you want to delete this Vread?");
-    if (!isComfirm || uid !== mem_idx) {
+    if (!isComfirm || uid != mem_idx) {
       return;
     }
 
     const result = await deleteVread(vreads_idx);
     if (!result.state) {
       setError(result.error);
+    } else {
+      navi(-1);
     }
-
-    if (props.onReload) props.onReload();
   };
 
   // 더보기 버튼
@@ -273,7 +277,7 @@ export default function Vread(props: any) {
           </SubTagPayload>
         )}
         <DatePayload>{vdString}</DatePayload>
-        {uid === mem_idx && isDetail && (
+        {isOnModifyBtn === true && (
           <>
             <DeleteButton onClick={onDeleteHandler}>delete</DeleteButton>
             <UpdateButton onClick={onClickUpdateForm}>Update</UpdateButton>
@@ -285,7 +289,7 @@ export default function Vread(props: any) {
             vread={props.vread}
             isModify={true}
             closeForm={onClickUpdateForm}
-            onUpdateReload={onUpdateReload}
+            onToggleUpdate={props.onToggleUpdate}
           />
         )}
       </Column>

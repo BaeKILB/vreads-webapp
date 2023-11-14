@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "../../style/Button";
 import { Input } from "../../style/Input";
 import { Error, Form, Title, Wrapper } from "../../style/auth-components";
-import GithubBtn from "../../components/auth-components/github-btn";
+// import GithubBtn from "../../components/auth-components/github-btn";
 import GoogleBtn from "../../components/auth-components/google-btn";
 import {
   MEM_MAX_EMAIL_LENGTH,
@@ -114,7 +114,7 @@ const CreateAccount = () => {
         </Button>
       </Form>
 
-      <GithubBtn />
+      {/* <GithubBtn /> */}
       <GoogleBtn />
       {error !== "" && <Error>{error}</Error>}
     </Wrapper>

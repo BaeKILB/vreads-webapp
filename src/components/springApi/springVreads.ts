@@ -28,6 +28,7 @@ export const VT_SUBTAG_MAX_LENGTH = 20;
 export const START_COUNT_INIT = 0;
 export const SET_PAGE_LIST_LIMIT_INIT = 15;
 
+// vread 등록
 export const addVread = async (
   vd_vtTitle: string,
   vd_vtDetail: string,
@@ -89,7 +90,120 @@ export const addVread = async (
   return resultData;
 };
 
-export const getAllVreads = async () => {
+// vread 업데이트
+// 업데이트 하지 않을 항목은 "" file 의 경우는 null
+export const updateVread = async (
+  vreads_idx: string,
+  vd_vtTitle: string,
+  vd_vtDetail: string,
+  vd_subtag: string,
+  file1: any
+) => {
+  const token = localStorage.getItem("token");
+
+  if (!token || token === "")
+    return {
+      state: "tokenError",
+      error:
+        "Vread 업데이트 중 문제가 발생하였습니다! 새로고침 또는 다시 로그인 해주세요",
+    };
+
+  const formData = new FormData();
+
+  formData.append("vreads_idx", vreads_idx);
+  formData.append("vd_vtTitle", vd_vtTitle);
+  formData.append("vd_vtDetail", vd_vtDetail);
+  formData.append("vd_subtag", vd_subtag);
+  formData.append("file1", file1);
+
+  const result = await fetch(apiUrl + "/updateVread", {
+    credentials: "include",
+    method: "POST",
+    headers: {
+      // "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    },
+    // body: JSON.stringify({ vd_vtTitle, vd_vtDetail, vd_subtag }),
+    body: formData,
+  });
+
+  if (result.status != 200) {
+    console.log("통신중 문제가 발생했습니다 " + result.status);
+    return {
+      state: "fetchError",
+      error: "통신중 문제가 발생했습니다 " + result.status,
+    };
+  }
+
+  const resultData = await result.json();
+  console.log(resultData);
+  return resultData;
+};
+
+// vread 삭제
+export const deleteVread = async (vreads_idx: string) => {
+  const token = localStorage.getItem("token");
+
+  if (!token || token === "") {
+    console.log("토큰이 없거나 잘못된 값 입니다!");
+    return {
+      state: "tokenError",
+      error: "토큰이 없거나 잘못된 값 입니다!",
+    };
+  }
+
+  // 유효성 체크
+  if (vreads_idx === "") {
+    console.log("속성 값이 잘못되었습니다!");
+    return {
+      state: "inputError",
+      error: "속성 값이 잘못되었습니다!",
+    };
+  }
+
+  const result = await fetch(apiUrl + "/deleteVread", {
+    credentials: "include",
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    },
+    body: JSON.stringify({
+      vreads_idx,
+    }),
+  });
+
+  if (result.status != 200) {
+    console.log("통신중 문제가 발생했습니다" + result.status);
+    return {
+      state: "fetchError",
+      error: "통신중 문제가 발생했습니다" + result.status,
+    };
+  }
+
+  const resultData = await result.json();
+  if (!resultData) {
+    return {
+      state: "dataError",
+      error: "통신중 문제가 발생했습니다 데이터를 받지 못했습니다!",
+    };
+  }
+  if (resultData.state !== "true") {
+    console.log(
+      "dataError : " +
+        resultData.state +
+        " 삭제중 문제가 발생했습니다 데이터를 받지 못했습니다! : " +
+        resultData.error
+    );
+  }
+
+  return resultData;
+};
+
+export const getAllVreads = async (
+  startCount: number,
+  setPageListLimit: number
+) => {
   const token = localStorage.getItem("token");
 
   const result = await fetch(apiUrl + "/all", {
@@ -99,6 +213,7 @@ export const getAllVreads = async () => {
       "Content-Type": "application/json",
       Authorization: "Bearer " + token,
     },
+    body: JSON.stringify({ startCount, setPageListLimit }),
   });
 
   if (result.status != 200) {
@@ -284,7 +399,7 @@ export const getSearchVreads = async (
   return resultData;
 };
 
-export const getVreadDetail = async (vread_idx: string) => {
+export const getVreadDetail = async (vreads_idx: string) => {
   const token = localStorage.getItem("token");
 
   if (!token || token === "") {
@@ -295,7 +410,7 @@ export const getVreadDetail = async (vread_idx: string) => {
   }
 
   // 유효성 체크
-  if (vread_idx === "") {
+  if (vreads_idx === "") {
     return {
       state: "inputError",
       error: "속성 값이 잘못되었습니다!",
@@ -310,7 +425,7 @@ export const getVreadDetail = async (vread_idx: string) => {
       Authorization: "Bearer " + token,
     },
     body: JSON.stringify({
-      vread_idx,
+      vreads_idx,
     }),
   });
 
@@ -340,69 +455,6 @@ export const getVreadDetail = async (vread_idx: string) => {
       state: "dataError",
       error:
         "통신중 문제가 발생했습니다 데이터를 받지 못했습니다! : " +
-        resultData.error,
-    };
-  }
-
-  return resultData;
-};
-
-export const deleteVread = async (vread_idx: string) => {
-  const token = localStorage.getItem("token");
-
-  if (!token || token === "") {
-    return {
-      state: "tokenError",
-      error: "토큰이 없거나 잘못된 값 입니다!",
-    };
-  }
-
-  // 유효성 체크
-  if (vread_idx === "") {
-    return {
-      state: "inputError",
-      error: "속성 값이 잘못되었습니다!",
-    };
-  }
-
-  const result = await fetch(apiUrl + "/delete", {
-    credentials: "include",
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: "Bearer " + token,
-    },
-    body: JSON.stringify({
-      vread_idx,
-    }),
-  });
-
-  if (result.status != 200) {
-    console.log("통신중 문제가 발생했습니다" + result.status);
-    return {
-      state: "fetchError",
-      error: "통신중 문제가 발생했습니다" + result.status,
-    };
-  }
-
-  const resultData = await result.json();
-  if (!resultData) {
-    return {
-      state: "dataError",
-      error: "통신중 문제가 발생했습니다 데이터를 받지 못했습니다!",
-    };
-  }
-  if (resultData.state !== "true") {
-    console.log(
-      "dataError : " +
-        resultData.state +
-        " 삭제중 문제가 발생했습니다 데이터를 받지 못했습니다! : " +
-        resultData.error
-    );
-    return {
-      state: "dataError",
-      error:
-        "삭제중 문제가 발생했습니다 데이터를 받지 못했습니다! : " +
         resultData.error,
     };
   }

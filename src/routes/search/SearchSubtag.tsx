@@ -10,6 +10,7 @@ import {
   START_COUNT_INIT,
   getSearchVreads,
 } from "../../components/springApi/springVreads";
+import { Button } from "../../style/Button";
 const Wrapper = styled.div`
   display: flex;
   align-items: center;
@@ -70,7 +71,7 @@ export default function SearchSubtag() {
   const [searchVreads, setSearchVreads] = useState<IVread[]>([]);
 
   // url 파라미터 들고오기
-  const { subTag } = useParams();
+  let { subTag } = useParams();
 
   const onChangeKeywordHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     const {
@@ -83,11 +84,28 @@ export default function SearchSubtag() {
     isSearchMore: boolean,
     paramKeyword: string | null
   ) => {
-    if (!isSearchMore) setStartCount(START_COUNT_INIT);
-    else setStartCount((state) => state + SET_PAGE_LIST_LIMIT_INIT);
+    // 만약 load more 을 눌렀을때 카운트 셋팅 하기
+    // 주의! 수정 해준뒤 변수에 따로 담아 똑같은 값으로 추가 해 준 뒤 사용
+    // useState 는 변경 직후가 아닌 스냅샷 값을 이용하기 때문
 
-    if (!isSearchMore) setPageListLimit(SET_PAGE_LIST_LIMIT_INIT);
-    else setPageListLimit((state) => state + SET_PAGE_LIST_LIMIT_INIT);
+    let startLimit = startCount;
+    let pageLimit = pageListLimit;
+
+    if (!isSearchMore) {
+      setStartCount(START_COUNT_INIT);
+      startLimit = START_COUNT_INIT;
+    } else {
+      setStartCount((state) => state + SET_PAGE_LIST_LIMIT_INIT);
+      startLimit += SET_PAGE_LIST_LIMIT_INIT;
+    }
+
+    if (!isSearchMore) {
+      setPageListLimit(SET_PAGE_LIST_LIMIT_INIT);
+      pageLimit = SET_PAGE_LIST_LIMIT_INIT;
+    } else {
+      setPageListLimit((state) => state + SET_PAGE_LIST_LIMIT_INIT);
+      pageLimit += SET_PAGE_LIST_LIMIT_INIT;
+    }
 
     // 로딩중이면 중복동작 안하도록
     if (isSearchLoading) return;
@@ -95,6 +113,13 @@ export default function SearchSubtag() {
     setIsSearchLoading(true);
 
     // 동작
+    // 만약 subtag가 있는 상황에서 paramKeyword 들고온다면
+    // subtag 를 빈값으로 변경
+
+    if (paramKeyword) {
+      subTag = "";
+    }
+
     //키워드 있는지 확인
     // 또는 파라미터에 키워드 들고 오는경우 체크
     if (searchKeyword !== "" || (paramKeyword && paramKeyword !== "")) {
@@ -103,7 +128,7 @@ export default function SearchSubtag() {
       if (paramKeyword && paramKeyword !== "") kw = paramKeyword;
 
       // getSearchVreads 에서 3번은 서브태그
-      const result = await getSearchVreads(kw, 3, startCount, pageListLimit);
+      const result = await getSearchVreads(kw, 3, startLimit, pageLimit);
       if (result.state !== "true") {
         setSearchError(result.error);
       } else {
@@ -122,8 +147,17 @@ export default function SearchSubtag() {
     }
   };
 
+  // 더보기 구현
+  const onLoadMore = () => {
+    if (subTag && subTag !== "") {
+      onSearchHandler(true, subTag);
+    } else {
+      onSearchHandler(true, null);
+    }
+  };
+
   useEffect(() => {
-    if (subTag) {
+    if (subTag && subTag !== "") {
       onSearchHandler(false, subTag);
     }
   }, []);
@@ -155,9 +189,11 @@ export default function SearchSubtag() {
           searchVreads.map((vread) => (
             <Vread key={vread.vreads_idx + "_search"} vread={vread} />
           ))}
-        {/* {searchVreads.length > 0 && (
-          <SearchBtn onClick={() => onSearchHandler(true)}>Load More</SearchBtn>
-        )} */}
+        {searchVreads && searchVreads.length > 0 ? (
+          <Button onClick={onLoadMore}>Load more</Button>
+        ) : (
+          ""
+        )}
       </TimelineWrapper>
     </Wrapper>
   );

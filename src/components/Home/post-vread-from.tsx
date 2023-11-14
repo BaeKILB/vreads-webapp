@@ -17,14 +17,15 @@ import {
   VT_SUBTAG_MAX_LENGTH,
   VT_TITLE_MAX_LENGTH,
   addVread,
+  updateVread,
 } from "../springApi/springVreads";
 
 export default function PostVreadForm(props: any) {
   // vread 데이터 담을 state
   const [vtData, setVtData] = useState({
-    vtTitle: "",
-    vtDetail: "",
-    vtSubtag: "",
+    vd_vtTitle: "",
+    vd_vtDetail: "",
+    vd_subtag: "",
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -54,15 +55,23 @@ export default function PostVreadForm(props: any) {
   let isModify = false;
   if (props.isModify) isModify = props.isModify;
 
+  // modify (update) 상태일때 vreads_idx 받아오기
+  let vreads_idx = "";
+  if (isModify === true && props.vread.vreads_idx) {
+    vreads_idx = props.vread.vreads_idx;
+  }
+  console.log(props.vread);
+  console.log(vreads_idx);
+
   //useEffect 활용
   useEffect(() => {
     if (isModify) {
-      const { vtTitle, vtDetail, vtSubtag } = props.vread;
-      setVtData({ vtTitle, vtDetail, vtSubtag });
+      const { vd_vtTitle, vd_vtDetail, vd_subtag } = props.vread;
+      setVtData({ vd_vtTitle, vd_vtDetail, vd_subtag });
     }
   }, []);
 
-  // vd_vtDetail 줄 늘어나는것 구현
+  // vd_vd_vtDetail 줄 늘어나는것 구현
   // ts 에서 useRef 사용시나 null 값 들어가는 경우 반드시 데이터 형식 지정해야함
   const textarea = useRef<HTMLTextAreaElement>(null);
 
@@ -83,19 +92,19 @@ export default function PostVreadForm(props: any) {
       target: { name, value },
     } = e;
 
-    if (name === "vd_vtTitle") {
+    if (name === "vd_vd_vtTitle") {
       setVtData((state) => {
-        return { ...state, vtTitle: value };
+        return { ...state, vd_vtTitle: value };
       });
-    } else if (name === "vd_vtDetail") {
+    } else if (name === "vd_vd_vtDetail") {
       textAreaResizeHandler(false);
       setVtData((state) => {
-        return { ...state, vtDetail: value };
+        return { ...state, vd_vtDetail: value };
       });
     } else if (name === "vd_subtag") {
       textAreaResizeHandler(false);
       setVtData((state) => {
-        return { ...state, vtSubtag: value };
+        return { ...state, vd_subtag: value };
       });
     }
   };
@@ -108,7 +117,7 @@ export default function PostVreadForm(props: any) {
   };
 
   const onSubmitHandler = async (e: React.FormEvent<HTMLFormElement>) => {
-    const { vtTitle, vtDetail, vtSubtag } = vtData;
+    const { vd_vtTitle, vd_vtDetail, vd_subtag } = vtData;
 
     e.preventDefault();
     if (isLoading) return;
@@ -121,14 +130,20 @@ export default function PostVreadForm(props: any) {
 
     // 만약 update버튼을 눌러 해당컴포넌트를 불러온 상태라면 updateVread로 동작하게 하기
     if (isModify) {
-      // onUpdateReload 를 동작시켜 현재 업데이트된 항목부터 불러오게 하기
-      if (props.onUpdateReload) props.onUpdateReload();
+      // vread 업데이트
+      result = await updateVread(
+        vreads_idx,
+        vd_vtTitle,
+        vd_vtDetail,
+        vd_subtag,
+        file
+      );
       console.log(result);
     } else {
       // vread 추가
-      result = await addVread(vtTitle, vtDetail, vtSubtag, file);
+      result = await addVread(vd_vtTitle, vd_vtDetail, vd_subtag, file);
       console.log(result);
-      // vreads 다시 불러오기
+      // home 의 vreads list 다시 로딩
       reloadList();
     }
 
@@ -140,12 +155,14 @@ export default function PostVreadForm(props: any) {
     }
 
     // post 보내고 난 뒤 값들 초기화 시키기
-    setVtData({ vtTitle: "", vtDetail: "", vtSubtag: "" });
+    setVtData({ vd_vtTitle: "", vd_vtDetail: "", vd_subtag: "" });
     setFile(null);
     setIsLoading(false);
     textAreaResizeHandler(true);
 
     if (isModify) {
+      // updateVread 동작 후 onToggleUpdate 로 페이지 리로딩 동작하기
+      if (props.onToggleUpdate) props.onToggleUpdate();
       props.closeForm();
     }
   };
@@ -155,20 +172,20 @@ export default function PostVreadForm(props: any) {
       {error !== "" && <Error>{error}</Error>}
       <Form action="" onSubmit={onSubmitHandler}>
         <Input
-          value={vtData.vtTitle}
+          value={vtData.vd_vtTitle}
           type="text"
           placeholder="title"
-          name="vd_vtTitle"
+          name="vd_vd_vtTitle"
           maxLength={VT_TITLE_MAX_LENGTH}
           className="title"
           onChange={onChangeHandler}
           required
         />
         <Textarea
-          value={vtData.vtDetail}
+          value={vtData.vd_vtDetail}
           type="text"
           placeholder="What's on your mind?"
-          name="vd_vtDetail"
+          name="vd_vd_vtDetail"
           className="detail"
           ref={textarea}
           onChange={onChangeHandler}
@@ -176,7 +193,7 @@ export default function PostVreadForm(props: any) {
         />
         <BtnWarp>
           <Input
-            value={vtData.vtSubtag}
+            value={vtData.vd_subtag}
             type="text"
             placeholder="Enter subtag"
             name="vd_subtag"

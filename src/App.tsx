@@ -18,6 +18,7 @@ import SearchSubtag from "./routes/search/SearchSubtag.tsx";
 import SearchBakers from "./routes/search/SearchBakers.tsx";
 import SocialLogin from "./routes/Auth/SocialLogin.tsx";
 import EmptyRoot from "./components/emptyRoot.tsx";
+import VreadDetail from "./routes/search/VreadDetail.tsx";
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -76,6 +77,11 @@ function App() {
           ],
         },
         { path: "bakers", element: <SearchBakers /> },
+        {
+          path: "vreadDetail",
+          element: <EmptyRoot />,
+          children: [{ path: ":paramVreadIdx", element: <VreadDetail /> }],
+        },
       ],
     },
     {
