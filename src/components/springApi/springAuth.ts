@@ -46,7 +46,7 @@ export const checkToken = async () => {
   }
   const resultData = await result.json();
 
-  if (resultData.state == "false") {
+  if (resultData.state !== "true") {
     console.log("결과에 이상이 있습니다! : " + resultData.error);
     return {
       state: "statusError",

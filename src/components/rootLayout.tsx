@@ -1,4 +1,4 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
 import SideNav from "./SideNav";
 import styled from "styled-components";
 import { OutletWrapper } from "../style/OutletWrapper";
@@ -16,7 +16,20 @@ const Wrapper = styled.div`
   max-width: 860px;
 `;
 export default function RootLayout() {
-  checkToken();
+  const navi = useNavigate();
+  const tokenAllowCheck = async () => {
+    const result = await checkToken();
+
+    if (result) {
+      if (result.state !== "true") {
+        alert("로그인 토큰이 만료되었습니다 !");
+        localStorage.removeItem("token");
+        navi("/welcome");
+      }
+    }
+  };
+
+  tokenAllowCheck();
 
   return (
     <>
