@@ -1,30 +1,14 @@
 # Notice
 
-This project uses "yarn berry" and "firebase"
+This project uses "yarn berry"
 
 If you want run this app, follow the steps :
-
-0. This app uses .env file
-   .env value list : <br/>
-   VITE_APP_API_KEY= <br/>
-   VITE_APP_AUTH_DOMAIN= <br/>
-   VITE_APP_PROJECT_ID= <br/>
-   VITE_APP_STORAGE_BUCKET= <br/>
-   VITE_APP_MESSAGIN_ID= <br/>
-   VITE_APP_APP_ID= <br/>
 
 1. Open up terminal <br/>
 
 2. Run this phrase: <br/>
    yarn install <br/>
    yarn run dev <br/>
-
-3. And when setting up firebase hosting, you must set it with the corresponding phrase.<br/>
-   yarn dlx firebase-tools login<br/>
-   yarn dlx firebase-tools init<br/>
-
-4. For easy build + firebase hosting, we created an execution statement called "yarn deploy".<br/>
-   Enter yarn deploy into the terminal to complete the build and firebase hosting.
 
 # React + TypeScript + Vite
 
