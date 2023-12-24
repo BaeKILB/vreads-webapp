@@ -165,12 +165,13 @@ export default function Vread(props: any) {
   const navi = useNavigate();
 
   //uid
+  // 만약 로그인 하지 않았을시에 조건도 추가
   const uid = localStorage.getItem("uid");
 
   // detail 페이지 일때 업데이트, 삭제 버튼 만들기
   let isOnModifyBtn = false;
 
-  if (uid == mem_idx && isDetail) {
+  if (!uid && uid == mem_idx && isDetail) {
     isOnModifyBtn = true;
   }
 
@@ -181,7 +182,7 @@ export default function Vread(props: any) {
   const onDeleteHandler = async () => {
     setError("");
     const isComfirm = confirm("Are you sure you want to delete this Vread?");
-    if (!isComfirm || uid != mem_idx) {
+    if (!uid || !isComfirm || uid != mem_idx) {
       return;
     }
 

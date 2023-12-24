@@ -11,7 +11,6 @@ import Profile from "./routes/User/Profile.tsx";
 import CreateAccount from "./routes/Auth/CreateAccount.tsx";
 import HomeUnLogin from "./routes/Home/HomeUnLogin.tsx";
 import SearchVreads from "./routes/search/SearchVreads.tsx";
-import ProtectedRoute from "./components/auth-components/protected-route.tsx";
 import LoginCheckRoute from "./components/auth-components/loginCheck.tsx";
 
 import SearchSubtag from "./routes/search/SearchSubtag.tsx";
@@ -53,9 +52,9 @@ function App() {
     {
       path: "/",
       element: (
-        <ProtectedRoute>
+        <>
           <RootLayout />
-        </ProtectedRoute>
+        </>
       ),
       children: [
         { path: "", element: <Home /> },

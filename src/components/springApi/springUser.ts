@@ -149,12 +149,14 @@ export const getUserSearch = async (
 ) => {
   const token = localStorage.getItem("token");
 
-  if (!token || token === "") {
-    return {
-      state: "tokenError",
-      error: "토큰이 없거나 잘못된 값 입니다!",
-    };
-  }
+  // 로그인 하지 않아도 검색 할 수 있도록 하기
+
+  // if (!token || token === "") {
+  //   return {
+  //     state: "tokenError",
+  //     error: "토큰이 없거나 잘못된 값 입니다!",
+  //   };
+  // }
 
   // 유효성 체크
   if (searchDate === "") {

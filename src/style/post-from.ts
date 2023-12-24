@@ -57,3 +57,10 @@ export const FileButton = styled.label`
 export const FileInput = styled.input`
   display: none;
 `;
+
+export const FromSub = styled.div`
+  margin-top: 10px;
+  font-size: 25px;
+  text-align: center;
+  cursor: pointer;
+`;

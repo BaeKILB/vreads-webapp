@@ -257,12 +257,14 @@ export const getUserVreads = async (
 ) => {
   const token = localStorage.getItem("token");
 
-  if (!token || token === "") {
-    return {
-      state: "tokenError",
-      error: "토큰이 없거나 잘못된 값 입니다!",
-    };
-  }
+  // 로그인 하지 않아도 검색 할 수 있도록 하기
+
+  // if (!token || token === "") {
+  //   return {
+  //     state: "tokenError",
+  //     error: "토큰이 없거나 잘못된 값 입니다!",
+  //   };
+  // }
 
   // 유효성 체크
   if (userSearchType === "" || searchType < 0) {
@@ -342,12 +344,14 @@ export const getSearchVreads = async (
 ) => {
   const token = localStorage.getItem("token");
 
-  if (!token || token === "") {
-    return {
-      state: "tokenError",
-      error: "토큰이 없거나 잘못된 값 입니다!",
-    };
-  }
+  // 로그인 하지 않아도 검색 할 수 있도록 하기
+
+  // if (!token || token === "") {
+  //   return {
+  //     state: "tokenError",
+  //     error: "토큰이 없거나 잘못된 값 입니다!",
+  //   };
+  // }
 
   // 유효성 체크
   if (searchType < 0 || startCount < 0 || setPageListLimit < 0) {
@@ -408,12 +412,14 @@ export const getSearchVreads = async (
 export const getVreadDetail = async (vreads_idx: string) => {
   const token = localStorage.getItem("token");
 
-  if (!token || token === "") {
-    return {
-      state: "tokenError",
-      error: "토큰이 없거나 잘못된 값 입니다!",
-    };
-  }
+  // 로그인 하지 않아도 검색 할 수 있도록 하기
+
+  // if (!token || token === "") {
+  //   return {
+  //     state: "tokenError",
+  //     error: "토큰이 없거나 잘못된 값 입니다!",
+  //   };
+  // }
 
   // 유효성 체크
   if (vreads_idx === "") {
@@ -471,10 +477,12 @@ export const getVreadDetail = async (vreads_idx: string) => {
 export const loadImg = (doc: HTMLImageElement, url: string) => {
   const token = localStorage.getItem("token");
 
-  if (!token || token === "") {
-    console.log("tokenError : 토큰이 없거나 잘못된 값 입니다!");
-    return;
-  }
+  // 로그인 하지 않아도 검색 할 수 있도록 하기
+
+  // if (!token || token === "") {
+  //   console.log("tokenError : 토큰이 없거나 잘못된 값 입니다!");
+  //   return;
+  // }
 
   // 이미지 데이터 요청
   fetch(url, {
@@ -514,12 +522,14 @@ export const getSubtagList = async (
 ) => {
   const token = localStorage.getItem("token");
 
-  if (!token || token === "") {
-    return {
-      state: "tokenError",
-      error: "토큰이 없거나 잘못된 값 입니다!",
-    };
-  }
+  // 로그인 하지 않아도 검색 할 수 있도록 하기
+
+  // if (!token || token === "") {
+  //   return {
+  //     state: "tokenError",
+  //     error: "토큰이 없거나 잘못된 값 입니다!",
+  //   };
+  // }
 
   // 유효성 체크
   if (searchType < 0 || startCount < 0 || setPageListLimit < 0) {

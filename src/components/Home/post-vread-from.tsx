@@ -8,6 +8,7 @@ import {
   FileButton,
   FileInput,
   Form,
+  FromSub,
   Textarea,
 } from "../../style/post-from";
 
@@ -19,6 +20,7 @@ import {
   addVread,
   updateVread,
 } from "../springApi/springVreads";
+import { useNavigate } from "react-router-dom";
 
 export default function PostVreadForm(props: any) {
   // vread 데이터 담을 state
@@ -30,8 +32,14 @@ export default function PostVreadForm(props: any) {
   const [isLoading, setIsLoading] = useState(false);
 
   const [error, setError] = useState("");
+
+  const navi = useNavigate();
+
   // 이미지 파일
   const [file, setFile] = useState<File | null>(null);
+
+  // 로그인 확인용 uid
+  const uid = localStorage.getItem("uid");
 
   // 만약 업데이트가 아닌 경우 게시글 올렸을때
   // redux 를 이용해 다시 로드하는 코드를 만들기
@@ -60,12 +68,11 @@ export default function PostVreadForm(props: any) {
   if (isModify === true && props.vread.vreads_idx) {
     vreads_idx = props.vread.vreads_idx;
   }
-  console.log(props.vread);
-  console.log(vreads_idx);
 
   //useEffect 활용
   useEffect(() => {
-    if (isModify) {
+    // 로그인 되지 않았을때 체크
+    if (isModify && uid) {
       const { vd_vtTitle, vd_vtDetail, vd_subtag } = props.vread;
       setVtData({ vd_vtTitle, vd_vtDetail, vd_subtag });
     }
@@ -169,56 +176,68 @@ export default function PostVreadForm(props: any) {
 
   return (
     <>
-      {error !== "" && <Error>{error}</Error>}
-      <Form action="" onSubmit={onSubmitHandler}>
-        <Input
-          value={vtData.vd_vtTitle}
-          type="text"
-          placeholder="title"
-          name="vd_vd_vtTitle"
-          maxLength={VT_TITLE_MAX_LENGTH}
-          className="title"
-          onChange={onChangeHandler}
-          required
-        />
-        <Textarea
-          value={vtData.vd_vtDetail}
-          type="text"
-          placeholder="What's on your mind?"
-          name="vd_vd_vtDetail"
-          className="detail"
-          ref={textarea}
-          onChange={onChangeHandler}
-          maxLength={VT_DETAIL_MAX_LENGTH}
-        />
-        <BtnWarp>
-          <Input
-            value={vtData.vd_subtag}
-            type="text"
-            placeholder="Enter subtag"
-            name="vd_subtag"
-            maxLength={VT_SUBTAG_MAX_LENGTH}
-            className="hash"
-            onChange={onChangeHandler}
-          />
-          <FileButton htmlFor={isModify ? "modifyFile1" : "file1"}>
-            {file ? (
-              <img src={URL.createObjectURL(file)} alt="Image upload file" />
-            ) : (
-              <img src="/image-plus-svgrepo-com.svg" alt="Image upload" />
-            )}
-          </FileButton>
-          <FileInput
-            onChange={onFileAddHandler}
-            type="file"
-            id={isModify ? "modifyFile1" : "file1"}
-            accept="image/*"
-          />
-          <Button type="submit">
-            {isModify ? "Vread update" : "Vread Post"}
-          </Button>
-        </BtnWarp>
-      </Form>
+      {uid ? (
+        <>
+          {error !== "" && <Error>{error}</Error>}
+          <Form action="" onSubmit={onSubmitHandler}>
+            <Input
+              value={vtData.vd_vtTitle}
+              type="text"
+              placeholder="title"
+              name="vd_vd_vtTitle"
+              maxLength={VT_TITLE_MAX_LENGTH}
+              className="title"
+              onChange={onChangeHandler}
+              required
+            />
+            <Textarea
+              value={vtData.vd_vtDetail}
+              type="text"
+              placeholder="What's on your mind?"
+              name="vd_vd_vtDetail"
+              className="detail"
+              ref={textarea}
+              onChange={onChangeHandler}
+              maxLength={VT_DETAIL_MAX_LENGTH}
+            />
+            <BtnWarp>
+              <Input
+                value={vtData.vd_subtag}
+                type="text"
+                placeholder="Enter subtag"
+                name="vd_subtag"
+                maxLength={VT_SUBTAG_MAX_LENGTH}
+                className="hash"
+                onChange={onChangeHandler}
+              />
+              <FileButton htmlFor={isModify ? "modifyFile1" : "file1"}>
+                {file ? (
+                  <img
+                    src={URL.createObjectURL(file)}
+                    alt="Image upload file"
+                  />
+                ) : (
+                  <img src="/image-plus-svgrepo-com.svg" alt="Image upload" />
+                )}
+              </FileButton>
+              <FileInput
+                onChange={onFileAddHandler}
+                type="file"
+                id={isModify ? "modifyFile1" : "file1"}
+                accept="image/*"
+              />
+              <Button type="submit">
+                {isModify ? "Vread update" : "Vread Post"}
+              </Button>
+            </BtnWarp>
+          </Form>
+        </>
+      ) : (
+        <>
+          <FromSub>Want to write Vread?</FromSub>
+          <Button onClick={() => navi("/welcome")}>Join Vreads</Button>
+        </>
+      )}
     </>
   );
 }

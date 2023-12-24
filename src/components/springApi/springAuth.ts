@@ -260,3 +260,55 @@ export const logoutSpring = async () => {
     console.log(e.message || "error");
   }
 };
+
+export const memberRemove = async () => {
+  // 토큰 가져오기
+  const tk = localStorage.getItem("token");
+  console.log(tk);
+  // 저장된 uid 가져오기
+  const u = localStorage.getItem("uid");
+
+  if (!tk || !u) {
+    console.log("token error");
+    return {
+      state: "token_error",
+      error: "인증 정보가 없습니다!",
+    };
+  }
+  //delete 는 body가 없음
+  const result = await fetch(apiUrl + "login/api/RemoveMember", {
+    credentials: "include",
+    method: "DELETE",
+    headers: {
+      Authorization: "Bearer " + tk,
+    },
+  });
+
+  console.log(result);
+
+  if (result.status != 200) {
+    console.log("mem quit error");
+    try {
+      const resultData = await result.json();
+      return resultData;
+    } catch (error) {
+      return {
+        state: "fetchError",
+        error: "회원탈퇴에 실패하였습니다! : 연결문제 " + result.status,
+      };
+    }
+  }
+
+  const resultData = await result.json();
+  if (!resultData) {
+    return {
+      state: "data_error",
+      error: "회원탈퇴에 실패하였습니다! : 데이터를 제대로 받지 못했습니다!",
+    };
+  } else {
+    localStorage.removeItem("token");
+    localStorage.removeItem("uid");
+    localStorage.removeItem("userPhoto");
+    return resultData;
+  }
+};

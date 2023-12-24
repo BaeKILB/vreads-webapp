@@ -21,6 +21,7 @@ import {
   getSubtagList,
   getUserVreads,
 } from "../../components/springApi/springVreads";
+import { memberRemove } from "../../components/springApi/springAuth";
 
 const TimelineWrapper = styled.div`
   display: flex;
@@ -178,6 +179,10 @@ export default function Profile() {
   const [reloadToggle, setReloadToggle] = useState(false);
 
   const navi = useNavigate();
+
+  // 로그인 확인용 uid
+  const uid = localStorage.getItem("uid");
+
   // 다른 유저 페이지로 접근시
   const { anotherUserUid } = useParams();
 
@@ -220,6 +225,9 @@ export default function Profile() {
     }
   };
 
+  // 유저 Vreads 불러오기
+
+  // 다른 계정 글을 로그인 안해도 볼수 있게 수정하기
   const getVreadList = async (isSearchMore: boolean) => {
     if (isProLoading) return;
 
@@ -337,6 +345,10 @@ export default function Profile() {
 
   // Vread list 받기
   useEffect(() => {
+    if (!uid && !anotherUserUid) {
+      alert("먼저 로그인 해주세요!");
+      navi("/welcome");
+    }
     getAnotherUserInfo();
     getVreadList(false);
     onSubTagListHandler(false);
@@ -382,6 +394,33 @@ export default function Profile() {
     setIsClickName((state) => !state);
   };
 
+  // 회원탈퇴 버튼 눌렀을때 ...
+  const onMemberQuit = async () => {
+    if (anotherUserUid) return;
+
+    const cf = confirm("정말 탈퇴 하시겠습니까 ?");
+
+    if (cf === true) {
+      const rmResult = await memberRemove();
+      if (rmResult) {
+        if (rmResult.state === "true") {
+          console.log("탈퇴 성공");
+          alert("회원 탈퇴가 성공적으로 진행되었습니다!");
+          navi("/welcome");
+          return;
+        } else {
+          console.log("탈퇴 실패");
+          alert(
+            "회원 탈퇴중 문제가 발생했습니다 ! : " +
+              rmResult.state +
+              " / " +
+              rmResult.error
+          );
+        }
+      }
+    }
+  };
+
   //닉네임 입력 동작
   const onNameChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     const {
@@ -390,6 +429,7 @@ export default function Profile() {
     setNameInput(value);
   };
 
+  //닉네임 업데이트
   const onNameUpdateHandler = async (e: React.ChangeEvent<HTMLFormElement>) => {
     e.preventDefault();
     // 만약 다른 userUid로 들어온 페이지면 ...
@@ -516,6 +556,11 @@ export default function Profile() {
         <Payload onClick={onClickBioHandler}>
           {bioInput !== "" ? bioInput : "Hello Bakers"}
         </Payload>
+      )}
+      {!anotherUserUid && (
+        <>
+          <Button onClick={onMemberQuit}>Member quit</Button>
+        </>
       )}
       {profileError !== "" && <Error key="pro_err">{profileError}</Error>}
       <SearchInputBox className="toggler">

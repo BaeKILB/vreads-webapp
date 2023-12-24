@@ -26,6 +26,7 @@ const LogoImage = styled.img`
   background-color: white;
   border-radius: 10px;
   transition: background-color 0.3s;
+  cursor: pointer;
   &:hover {
     background-color: #fcbb79;
   }
@@ -34,6 +35,7 @@ const Sub = styled.div`
   margin-top: 20px;
   font-size: 45px;
   text-align: center;
+  cursor: pointer;
 `;
 
 const Button = styled.button`
@@ -69,8 +71,8 @@ export default function HomeUnLogin() {
   return (
     <Wrapper>
       <Title>Vreads</Title>
-      <LogoImage src="/bread-svgrepo-com.svg" />
-      <Sub>Watch And Find A Vreads</Sub>
+      <LogoImage onClick={() => nav("/")} src="/bread-svgrepo-com.svg" />
+      <Sub onClick={() => nav("/")}>Watch And Find A Vreads</Sub>
       <AccountBox>
         <Button onClick={() => nav("/login")}>Sign in</Button>
         <Button onClick={() => nav("/createAccount")}>Sign up</Button>

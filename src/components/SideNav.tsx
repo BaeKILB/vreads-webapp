@@ -46,10 +46,18 @@ const AvatarImg = styled.img`
 
 export default function SideNav() {
   const navi = useNavigate();
+  // 로그인 확인용 uid
+  const uid = localStorage.getItem("uid");
+
   const userPhoto = localStorage.getItem("userPhoto");
   const profileImg = userPhoto && userPhoto !== "undefined" ? userPhoto : "";
 
   const onLogoutHandler = async () => {
+    if (!uid) {
+      alert("먼저 로그인 해주세요!");
+      navi("/welcome");
+      return;
+    }
     const answer = confirm("정말 로그아웃 하시겠습니까?");
 
     if (answer) {

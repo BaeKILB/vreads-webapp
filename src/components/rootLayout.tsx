@@ -17,6 +17,7 @@ const Wrapper = styled.div`
 `;
 export default function RootLayout() {
   const navi = useNavigate();
+
   const tokenAllowCheck = async () => {
     const result = await checkToken();
 
@@ -29,7 +30,13 @@ export default function RootLayout() {
     }
   };
 
-  tokenAllowCheck();
+  // 만약 로그인 되어있는 상태면 토큰 재발급 동작 시키기
+
+  const tk = localStorage.getItem("token");
+
+  if (tk) {
+    tokenAllowCheck();
+  }
 
   return (
     <>
