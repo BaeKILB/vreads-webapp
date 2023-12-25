@@ -171,7 +171,7 @@ export default function Vread(props: any) {
   // detail 페이지 일때 업데이트, 삭제 버튼 만들기
   let isOnModifyBtn = false;
 
-  if (!uid && uid == mem_idx && isDetail) {
+  if (uid && uid == mem_idx && isDetail) {
     isOnModifyBtn = true;
   }
 
