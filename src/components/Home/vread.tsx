@@ -62,6 +62,7 @@ const Username = styled.span`
 const Payload = styled.p`
   margin: 10px 0px;
   font-size: 18px;
+  line-height: 1.5rem;
   &.vt_title {
     font-size: 20px;
     font-weight: bold;
