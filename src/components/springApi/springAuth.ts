@@ -264,7 +264,7 @@ export const logoutSpring = async () => {
 export const memberRemove = async () => {
   // 토큰 가져오기
   const tk = localStorage.getItem("token");
-  console.log(tk);
+
   // 저장된 uid 가져오기
   const u = localStorage.getItem("uid");
 
@@ -283,8 +283,6 @@ export const memberRemove = async () => {
       Authorization: "Bearer " + tk,
     },
   });
-
-  console.log(result);
 
   if (result.status != 200) {
     console.log("mem quit error");

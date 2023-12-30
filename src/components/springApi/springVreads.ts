@@ -92,7 +92,6 @@ export const addVread = async (
   }
 
   const resultData = await result.json();
-  console.log(resultData);
   return resultData;
 };
 
@@ -142,7 +141,6 @@ export const updateVread = async (
   }
 
   const resultData = await result.json();
-  console.log(resultData);
   return resultData;
 };
 
@@ -231,7 +229,7 @@ export const getAllVreads = async (
   }
 
   const resultData = await result.json();
-  console.log(resultData);
+
   return resultData;
 };
 
@@ -493,11 +491,7 @@ export const loadImg = (doc: HTMLImageElement, url: string) => {
   }) //
     .then((res) => res.blob())
     .then((blob) => {
-      console.log(blob);
-
       const objectURL = URL.createObjectURL(blob);
-      console.log(objectURL);
-
       doc.src = objectURL;
     });
 };
